@@ -27,6 +27,7 @@ export type Task = {
   cost: number | null
   status: 'open' | 'done'
   resolution_notes: string | null
+  warranty_until: string | null
   completed_at: string | null
   created_by: string | null
   created_at: string

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { format } from 'date-fns'
 import { he } from 'date-fns/locale'
 import {
-  Plus, Phone, CheckCircle2, Clock, AlertTriangle, ImagePlus, X, History,
+  Plus, Phone, CheckCircle2, Clock, AlertTriangle, ImagePlus, X, History, ShieldCheck,
 } from 'lucide-react'
 import { supabase, type Task, type Vendor } from '../lib/supabase'
 
@@ -53,7 +53,7 @@ export default function FaultsPage() {
         </div>
         <button
           onClick={() => setReportOpen(true)}
-          className="flex items-center gap-1.5 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
+          className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
         >
           <Plus size={16} />
           דיווח על תקלה
@@ -94,6 +94,19 @@ export default function FaultsPage() {
                   </div>
                   <span className="text-sm text-slate-500 ltr-num">₪{(t.cost ?? 0).toLocaleString()}</span>
                 </div>
+                {t.warranty_until && (
+                  new Date(t.warranty_until) >= new Date(new Date().toDateString()) ? (
+                    <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700">
+                      <ShieldCheck size={12} />
+                      אחריות עד {format(new Date(t.warranty_until), 'd בMMMM yyyy', { locale: he })}
+                    </span>
+                  ) : (
+                    <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-500">
+                      <ShieldCheck size={12} />
+                      האחריות הסתיימה
+                    </span>
+                  )
+                )}
                 {t.resolution_notes && <p className="mt-1 text-sm text-slate-500">{t.resolution_notes}</p>}
                 {t.completed_at && (
                   <p className="mt-1 text-xs text-slate-400">
@@ -304,6 +317,8 @@ function ReportDialog({
 function CloseDialog({ task, onClose, onSaved }: { task: Task; onClose: () => void; onSaved: () => void }) {
   const [cost, setCost] = useState('')
   const [notes, setNotes] = useState('')
+  const [hasWarranty, setHasWarranty] = useState(false)
+  const [warrantyUntil, setWarrantyUntil] = useState('')
   const [busy, setBusy] = useState(false)
 
   async function save(e: React.FormEvent) {
@@ -317,6 +332,7 @@ function CloseDialog({ task, onClose, onSaved }: { task: Task; onClose: () => vo
         status: 'done',
         cost: parseFloat(cost) || 0,
         resolution_notes: notes.trim() || null,
+        warranty_until: hasWarranty && warrantyUntil ? warrantyUntil : null,
         completed_at: new Date().toISOString(),
       })
       .eq('id', task.id)
@@ -346,6 +362,30 @@ function CloseDialog({ task, onClose, onSaved }: { task: Task; onClose: () => vo
           <span className="mb-1 block text-slate-600">הערות סיכום (רשות)</span>
           <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className={inputCls} />
         </label>
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+          <label className="flex cursor-pointer items-center gap-2 text-sm font-medium text-slate-700">
+            <input
+              type="checkbox"
+              checked={hasWarranty}
+              onChange={(e) => setHasWarranty(e.target.checked)}
+              className="h-4 w-4 accent-emerald-600"
+            />
+            <ShieldCheck size={16} className="text-emerald-600" />
+            קיבלתי אחריות על התיקון
+          </label>
+          {hasWarranty && (
+            <label className="mt-2 block text-sm">
+              <span className="mb-1 block text-slate-600">אחריות עד</span>
+              <input
+                type="date"
+                required
+                value={warrantyUntil}
+                onChange={(e) => setWarrantyUntil(e.target.value)}
+                className={inputCls}
+              />
+            </label>
+          )}
+        </div>
         <DialogButtons busy={busy} onCancel={onClose} submitLabel="סגור קריאה" />
       </form>
     </Modal>
@@ -356,7 +396,7 @@ export function Modal({ title, onClose, children }: { title: string; onClose: ()
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/40 p-4" onClick={onClose}>
       <div
-        className="w-full max-w-md rounded-2xl bg-white p-5 shadow-xl"
+        className="max-h-[88vh] w-full max-w-md overflow-y-auto rounded-2xl bg-white p-5 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4 flex items-center justify-between">

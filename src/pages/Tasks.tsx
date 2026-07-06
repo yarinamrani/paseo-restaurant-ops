@@ -42,7 +42,7 @@ export default function TasksPage() {
         </div>
         <button
           onClick={() => setAddOpen(true)}
-          className="flex items-center gap-1.5 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
+          className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
         >
           <Plus size={16} />
           משימה חדשה
