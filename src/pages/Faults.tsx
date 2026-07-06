@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { format } from 'date-fns'
 import { he } from 'date-fns/locale'
 import {
-  Plus, Phone, CheckCircle2, Clock, AlertTriangle, ImagePlus, X, History, ShieldCheck,
+  Plus, Phone, CheckCircle2, Clock, AlertTriangle, ImagePlus, X, History, ShieldCheck, Pencil,
 } from 'lucide-react'
 import { supabase, BRANCHES, branchColors, type Task, type Vendor } from '../lib/supabase'
 
@@ -18,6 +18,7 @@ export default function FaultsPage() {
   const [branchFilter, setBranchFilter] = useState<string>('הכל')
   const [showDone, setShowDone] = useState(false)
   const [reportOpen, setReportOpen] = useState(false)
+  const [editing, setEditing] = useState<Task | null>(null)
   const [closing, setClosing] = useState<Task | null>(null)
   const [toast, setToast] = useState<string | null>(null)
 
@@ -71,7 +72,7 @@ export default function FaultsPage() {
       ) : (
         <div className="space-y-3">
           {open.map((t) => (
-            <FaultCard key={t.id} task={t} vendors={vendors} onClose={() => setClosing(t)} />
+            <FaultCard key={t.id} task={t} vendors={vendors} onClose={() => setClosing(t)} onEdit={() => setEditing(t)} />
           ))}
         </div>
       )}
@@ -123,13 +124,16 @@ export default function FaultsPage() {
           </div>
         ))}
 
-      {reportOpen && (
+      {(reportOpen || editing) && (
         <ReportDialog
+          task={editing}
           vendors={vendors}
-          onClose={() => setReportOpen(false)}
+          onClose={() => { setReportOpen(false); setEditing(null) }}
           onSaved={() => {
+            const wasEdit = !!editing
             setReportOpen(false)
-            notify('המשימה נוצרה בהצלחה!')
+            setEditing(null)
+            notify(wasEdit ? 'התקלה עודכנה בהצלחה!' : 'המשימה נוצרה בהצלחה!')
             load()
           }}
         />
@@ -156,7 +160,9 @@ export default function FaultsPage() {
   )
 }
 
-function FaultCard({ task, vendors, onClose }: { task: Task; vendors: Vendor[]; onClose: () => void }) {
+function FaultCard({
+  task, vendors, onClose, onEdit,
+}: { task: Task; vendors: Vendor[]; onClose: () => void; onEdit: () => void }) {
   const vendor = vendors.find((v) => v.id === task.vendor_id)
   const overdue = task.due_date && new Date(task.due_date) < new Date()
   const pr = priorityLabels[task.priority] ?? priorityLabels.medium
@@ -208,7 +214,7 @@ function FaultCard({ task, vendors, onClose }: { task: Task; vendors: Vendor[]; 
           </a>
         )}
       </div>
-      <div className="mt-3 border-t border-slate-100 pt-3">
+      <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-3">
         <button
           onClick={onClose}
           className="flex items-center gap-1.5 rounded-lg bg-slate-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-700"
@@ -216,21 +222,29 @@ function FaultCard({ task, vendors, onClose }: { task: Task; vendors: Vendor[]; 
           <CheckCircle2 size={15} />
           סגור קריאה
         </button>
+        <button
+          onClick={onEdit}
+          className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm text-slate-500 hover:bg-slate-100"
+          title="ערוך תקלה"
+        >
+          <Pencil size={14} />
+          ערוך
+        </button>
       </div>
     </div>
   )
 }
 
 function ReportDialog({
-  vendors, onClose, onSaved,
-}: { vendors: Vendor[]; onClose: () => void; onSaved: () => void }) {
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [branch, setBranch] = useState('פסאו')
-  const [priority, setPriority] = useState('medium')
-  const [dueDate, setDueDate] = useState('')
-  const [vendorId, setVendorId] = useState('')
-  const [assignee, setAssignee] = useState('')
+  task, vendors, onClose, onSaved,
+}: { task: Task | null; vendors: Vendor[]; onClose: () => void; onSaved: () => void }) {
+  const [title, setTitle] = useState(task?.title ?? '')
+  const [description, setDescription] = useState(task?.description ?? '')
+  const [branch, setBranch] = useState(task?.branch ?? 'פסאו')
+  const [priority, setPriority] = useState<string>(task?.priority ?? 'medium')
+  const [dueDate, setDueDate] = useState(task?.due_date ? task.due_date.slice(0, 10) : '')
+  const [vendorId, setVendorId] = useState(task?.vendor_id ?? '')
+  const [assignee, setAssignee] = useState(task?.assignee_name ?? '')
   const [file, setFile] = useState<File | null>(null)
   const [busy, setBusy] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
@@ -238,7 +252,7 @@ function ReportDialog({
   async function save(e: React.FormEvent) {
     e.preventDefault()
     setBusy(true)
-    let imageUrl: string | null = null
+    let imageUrl: string | null = task?.issue_image_url ?? null
     if (file) {
       const path = `${crypto.randomUUID()}-${file.name}`
       const { error } = await supabase.storage.from('task-images').upload(path, file)
@@ -246,8 +260,7 @@ function ReportDialog({
         imageUrl = supabase.storage.from('task-images').getPublicUrl(path).data.publicUrl
       }
     }
-    const { data: userData } = await supabase.auth.getUser()
-    await supabase.from('tasks').insert({
+    const payload = {
       title: title.trim(),
       description: description.trim() || null,
       branch,
@@ -256,15 +269,23 @@ function ReportDialog({
       assignee_name: assignee.trim() || null,
       priority,
       issue_image_url: imageUrl,
-      status: 'open',
-      created_by: userData.user?.id ?? null,
-    })
+    }
+    if (task) {
+      await supabase.from('tasks').update(payload).eq('id', task.id)
+    } else {
+      const { data: userData } = await supabase.auth.getUser()
+      await supabase.from('tasks').insert({
+        ...payload,
+        status: 'open',
+        created_by: userData.user?.id ?? null,
+      })
+    }
     setBusy(false)
     onSaved()
   }
 
   return (
-    <Modal title="דיווח על תקלה חדשה" onClose={onClose}>
+    <Modal title={task ? `עריכת תקלה — ${task.title}` : 'דיווח על תקלה חדשה'} onClose={onClose}>
       <form onSubmit={save} className="space-y-3">
         <BranchSelect value={branch} onChange={setBranch} />
         <input
@@ -314,10 +335,10 @@ function ReportDialog({
             className="flex items-center gap-1.5 rounded-lg border border-dashed border-slate-300 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50"
           >
             <ImagePlus size={15} />
-            {file ? file.name : 'צרף תמונה של התקלה'}
+            {file ? file.name : task?.issue_image_url ? 'החלף את תמונת התקלה' : 'צרף תמונה של התקלה'}
           </button>
         </div>
-        <DialogButtons busy={busy} onCancel={onClose} submitLabel="דווח" />
+        <DialogButtons busy={busy} onCancel={onClose} submitLabel={task ? 'שמור שינויים' : 'דווח'} />
       </form>
     </Modal>
   )

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { format } from 'date-fns'
 import { he } from 'date-fns/locale'
-import { Plus, CheckCircle2, Circle, Clock } from 'lucide-react'
+import { Plus, CheckCircle2, Circle, Clock, Pencil } from 'lucide-react'
 import { supabase, type AdminTask } from '../lib/supabase'
 import { Modal, DialogButtons, inputCls, BranchBadge, BranchFilter, BranchSelect } from './Faults'
 
@@ -9,6 +9,7 @@ export default function TasksPage() {
   const [tasks, setTasks] = useState<AdminTask[]>([])
   const [branchFilter, setBranchFilter] = useState<string>('הכל')
   const [addOpen, setAddOpen] = useState(false)
+  const [editing, setEditing] = useState<AdminTask | null>(null)
 
   async function load() {
     const { data } = await supabase.from('admin_tasks').select('*').order('deadline', { ascending: true })
@@ -96,37 +97,61 @@ export default function TasksPage() {
                     {t.assignee_name && <span>באחריות {t.assignee_name}</span>}
                   </div>
                 </div>
+                <button
+                  onClick={() => setEditing(t)}
+                  className="mt-0.5 shrink-0 rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                  title="ערוך משימה"
+                >
+                  <Pencil size={15} />
+                </button>
               </div>
             )
           })}
         </div>
       )}
 
-      {addOpen && <AddTaskDialog onClose={() => setAddOpen(false)} onSaved={() => { setAddOpen(false); load() }} />}
+      {(addOpen || editing) && (
+        <TaskDialog
+          task={editing}
+          onClose={() => { setAddOpen(false); setEditing(null) }}
+          onSaved={() => { setAddOpen(false); setEditing(null); load() }}
+        />
+      )}
     </div>
   )
 }
 
-function AddTaskDialog({ onClose, onSaved }: { onClose: () => void; onSaved: () => void }) {
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [branch, setBranch] = useState('פסאו')
-  const [assignee, setAssignee] = useState('')
-  const [deadline, setDeadline] = useState('')
-  const [priority, setPriority] = useState('medium')
+function TaskDialog({
+  task, onClose, onSaved,
+}: { task: AdminTask | null; onClose: () => void; onSaved: () => void }) {
+  const [title, setTitle] = useState(task?.title ?? '')
+  const [description, setDescription] = useState(task?.description ?? '')
+  const [branch, setBranch] = useState(task?.branch ?? 'פסאו')
+  const [assignee, setAssignee] = useState(task?.assignee_name ?? '')
+  const [deadline, setDeadline] = useState(task?.deadline ? task.deadline.slice(0, 10) : '')
+  const [priority, setPriority] = useState<string>(task?.priority ?? 'medium')
   const [busy, setBusy] = useState(false)
 
   async function save(e: React.FormEvent) {
     e.preventDefault()
     setBusy(true)
-    const { data: userData } = await supabase.auth.getUser()
-    await supabase.from('admin_tasks').insert({
+    const payload = {
       title: title.trim(),
       description: description.trim() || null,
       branch,
       assignee_name: assignee.trim() || null,
       deadline: deadline ? new Date(deadline).toISOString() : null,
       priority,
+    }
+    if (task) {
+      await supabase.from('admin_tasks').update(payload).eq('id', task.id)
+      setBusy(false)
+      onSaved()
+      return
+    }
+    const { data: userData } = await supabase.auth.getUser()
+    await supabase.from('admin_tasks').insert({
+      ...payload,
       created_by: userData.user?.id ?? null,
     })
     setBusy(false)
@@ -134,7 +159,7 @@ function AddTaskDialog({ onClose, onSaved }: { onClose: () => void; onSaved: () 
   }
 
   return (
-    <Modal title="משימה חדשה" onClose={onClose}>
+    <Modal title={task ? `עריכת משימה — ${task.title}` : 'משימה חדשה'} onClose={onClose}>
       <form onSubmit={save} className="space-y-3">
         <BranchSelect value={branch} onChange={setBranch} />
         <input required autoFocus value={title} onChange={(e) => setTitle(e.target.value)} placeholder="מה צריך לעשות?" className={inputCls} />
@@ -157,7 +182,7 @@ function AddTaskDialog({ onClose, onSaved }: { onClose: () => void; onSaved: () 
             <option value="low">נמוך</option>
           </select>
         </label>
-        <DialogButtons busy={busy} onCancel={onClose} submitLabel="צור משימה" />
+        <DialogButtons busy={busy} onCancel={onClose} submitLabel={task ? 'שמור שינויים' : 'צור משימה'} />
       </form>
     </Modal>
   )
