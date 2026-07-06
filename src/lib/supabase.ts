@@ -7,9 +7,10 @@ export const supabase = createClient(
 
 export type Vendor = {
   id: string
-  name: string
+  name: string | null
   profession: string
-  phone: string
+  phone: string | null
+  category: string
   rating: number
   created_at: string
 }

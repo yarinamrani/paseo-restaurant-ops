@@ -28,7 +28,7 @@ export default function FaultsPage() {
   async function load() {
     const [t, v] = await Promise.all([
       supabase.from('tasks').select('*').order('created_at', { ascending: false }),
-      supabase.from('vendors').select('*').order('rating', { ascending: false }),
+      supabase.from('vendors').select('*').order('profession'),
     ])
     setTasks((t.data as Task[]) ?? [])
     setVendors((v.data as Vendor[]) ?? [])
@@ -168,14 +168,17 @@ function FaultCard({ task, vendors, onClose }: { task: Task; vendors: Vendor[]; 
             {task.assignee_name && <span>אחראי על ביצוע: {task.assignee_name}</span>}
             {vendor && (
               <span className="flex items-center gap-1.5">
-                {vendor.name} ({vendor.profession})
-                <a
-                  href={`tel:${vendor.phone}`}
-                  className="flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 font-medium text-emerald-700 hover:bg-emerald-100"
-                >
-                  <Phone size={11} />
-                  התקשר עכשיו
-                </a>
+                {vendor.profession}
+                {vendor.name ? ` — ${vendor.name}` : ''}
+                {vendor.phone && (
+                  <a
+                    href={`tel:${vendor.phone}`}
+                    className="flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 font-medium text-emerald-700 hover:bg-emerald-100"
+                  >
+                    <Phone size={11} />
+                    התקשר עכשיו
+                  </a>
+                )}
               </span>
             )}
           </div>
@@ -271,7 +274,8 @@ function ReportDialog({
               <option value="">בחר איש מקצוע...</option>
               {vendors.map((v) => (
                 <option key={v.id} value={v.id}>
-                  {v.name} — {v.profession}
+                  {v.profession}
+                  {v.name ? ` — ${v.name}` : ''}
                 </option>
               ))}
             </select>
