@@ -43,6 +43,19 @@ export type Task = {
   created_at: string
 }
 
+export type RecurringTask = {
+  id: string
+  title: string
+  description: string | null
+  branch: string
+  assignee_name: string | null
+  priority: string
+  interval_days: number
+  next_due: string
+  active: boolean
+  created_at: string
+}
+
 export type AdminTask = {
   id: string
   title: string

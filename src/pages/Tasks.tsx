@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { format } from 'date-fns'
 import { he } from 'date-fns/locale'
-import { Plus, CheckCircle2, Circle, Clock, Pencil } from 'lucide-react'
-import { supabase, type AdminTask } from '../lib/supabase'
+import { Plus, CheckCircle2, Circle, Clock, Pencil, Repeat, Trash2, Pause, Play } from 'lucide-react'
+import { supabase, type AdminTask, type RecurringTask } from '../lib/supabase'
 import { Modal, DialogButtons, inputCls, BranchBadge, BranchFilter, BranchSelect } from './Faults'
 
 export default function TasksPage() {
@@ -10,6 +10,7 @@ export default function TasksPage() {
   const [branchFilter, setBranchFilter] = useState<string>('הכל')
   const [addOpen, setAddOpen] = useState(false)
   const [editing, setEditing] = useState<AdminTask | null>(null)
+  const [recurringOpen, setRecurringOpen] = useState(false)
 
   async function load() {
     const { data } = await supabase.from('admin_tasks').select('*').order('deadline', { ascending: true })
@@ -43,13 +44,23 @@ export default function TasksPage() {
           <h2 className="text-xl font-bold text-slate-900">משימות</h2>
           <p className="text-sm text-slate-500">{open.length} פתוחות · {done.length} הושלמו</p>
         </div>
-        <button
-          onClick={() => setAddOpen(true)}
-          className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
-        >
-          <Plus size={16} />
-          משימה חדשה
-        </button>
+        <div className="flex shrink-0 gap-2">
+          <button
+            onClick={() => setRecurringOpen(true)}
+            title="משימות חוזרות"
+            className="flex items-center gap-1.5 whitespace-nowrap rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50"
+          >
+            <Repeat size={15} />
+            חוזרות
+          </button>
+          <button
+            onClick={() => setAddOpen(true)}
+            className="flex items-center gap-1.5 whitespace-nowrap rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
+          >
+            <Plus size={16} />
+            משימה חדשה
+          </button>
+        </div>
       </div>
 
       <BranchFilter value={branchFilter} onChange={setBranchFilter} counts={tasks.filter((t) => t.status === 'open')} />
@@ -117,6 +128,8 @@ export default function TasksPage() {
           onSaved={() => { setAddOpen(false); setEditing(null); load() }}
         />
       )}
+
+      {recurringOpen && <RecurringModal onClose={() => { setRecurringOpen(false); load() }} />}
     </div>
   )
 }
@@ -184,6 +197,142 @@ function TaskDialog({
         </label>
         <DialogButtons busy={busy} onCancel={onClose} submitLabel={task ? 'שמור שינויים' : 'צור משימה'} />
       </form>
+    </Modal>
+  )
+}
+
+const FREQUENCIES: { days: number; label: string }[] = [
+  { days: 7, label: 'כל שבוע' },
+  { days: 14, label: 'כל שבועיים' },
+  { days: 30, label: 'כל חודש' },
+  { days: 90, label: 'כל 3 חודשים' },
+  { days: 180, label: 'כל חצי שנה' },
+  { days: 365, label: 'כל שנה' },
+]
+
+const freqLabel = (days: number) =>
+  FREQUENCIES.find((f) => f.days === days)?.label ?? `כל ${days} ימים`
+
+function RecurringModal({ onClose }: { onClose: () => void }) {
+  const [items, setItems] = useState<RecurringTask[]>([])
+  const [adding, setAdding] = useState(false)
+  const [title, setTitle] = useState('')
+  const [branch, setBranch] = useState('פסאו')
+  const [assignee, setAssignee] = useState('')
+  const [intervalDays, setIntervalDays] = useState(30)
+  const [firstDue, setFirstDue] = useState('')
+  const [busy, setBusy] = useState(false)
+
+  async function load() {
+    const { data } = await supabase.from('recurring_tasks').select('*').order('next_due')
+    setItems((data as RecurringTask[]) ?? [])
+  }
+
+  useEffect(() => {
+    load()
+  }, [])
+
+  async function add(e: React.FormEvent) {
+    e.preventDefault()
+    setBusy(true)
+    await supabase.from('recurring_tasks').insert({
+      title: title.trim(),
+      branch,
+      assignee_name: assignee.trim() || null,
+      interval_days: intervalDays,
+      next_due: firstDue,
+    })
+    setBusy(false)
+    setAdding(false)
+    setTitle('')
+    setAssignee('')
+    setFirstDue('')
+    load()
+  }
+
+  async function toggleActive(r: RecurringTask) {
+    await supabase.from('recurring_tasks').update({ active: !r.active }).eq('id', r.id)
+    load()
+  }
+
+  async function remove(r: RecurringTask) {
+    if (!confirm(`למחוק את המשימה החוזרת "${r.title}"?`)) return
+    await supabase.from('recurring_tasks').delete().eq('id', r.id)
+    load()
+  }
+
+  return (
+    <Modal title="משימות חוזרות 🔁" onClose={onClose}>
+      <p className="mb-3 text-xs text-slate-500">
+        משימות שנוצרות אוטומטית כל תקופה — למשל ניקוי מנדפים חודשי. המשימה נכנסת לרשימה בבוקר של יום היעד.
+      </p>
+
+      {items.length === 0 && !adding && (
+        <p className="mb-3 rounded-xl border border-dashed border-slate-300 py-6 text-center text-sm text-slate-400">
+          אין משימות חוזרות עדיין
+        </p>
+      )}
+
+      <div className="mb-3 space-y-2">
+        {items.map((r) => (
+          <div key={r.id} className={`rounded-xl border border-slate-200 p-3 ${r.active ? 'bg-white' : 'bg-slate-50 opacity-70'}`}>
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="text-sm font-medium text-slate-900">{r.title}</span>
+                  <BranchBadge branch={r.branch} />
+                </div>
+                <p className="mt-0.5 text-xs text-slate-500">
+                  {freqLabel(r.interval_days)} · {r.active ? `הבאה: ${new Date(r.next_due).toLocaleDateString('he-IL')}` : 'מושהית'}
+                  {r.assignee_name && ` · באחריות ${r.assignee_name}`}
+                </p>
+              </div>
+              <div className="flex shrink-0 gap-1">
+                <button onClick={() => toggleActive(r)} title={r.active ? 'השהה' : 'הפעל'} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700">
+                  {r.active ? <Pause size={14} /> : <Play size={14} />}
+                </button>
+                <button onClick={() => remove(r)} title="מחק" className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600">
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {adding ? (
+        <form onSubmit={add} className="space-y-3 rounded-xl border border-emerald-200 bg-emerald-50/40 p-3">
+          <input required autoFocus value={title} onChange={(e) => setTitle(e.target.value)} placeholder="מה המשימה? (ניקוי מנדפים...)" className={inputCls} />
+          <BranchSelect value={branch} onChange={setBranch} />
+          <div className="grid grid-cols-2 gap-3">
+            <label className="block text-sm">
+              <span className="mb-1 block text-slate-600">תדירות</span>
+              <select value={intervalDays} onChange={(e) => setIntervalDays(Number(e.target.value))} className={inputCls}>
+                {FREQUENCIES.map((f) => (
+                  <option key={f.days} value={f.days}>{f.label}</option>
+                ))}
+              </select>
+            </label>
+            <label className="block text-sm">
+              <span className="mb-1 block text-slate-600">תאריך ראשון</span>
+              <input type="date" required value={firstDue} onChange={(e) => setFirstDue(e.target.value)} className={inputCls} />
+            </label>
+          </div>
+          <label className="block text-sm">
+            <span className="mb-1 block text-slate-600">באחריות (רשות)</span>
+            <input value={assignee} onChange={(e) => setAssignee(e.target.value)} className={inputCls} />
+          </label>
+          <DialogButtons busy={busy} onCancel={() => setAdding(false)} submitLabel="הוסף" />
+        </form>
+      ) : (
+        <button
+          onClick={() => setAdding(true)}
+          className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-emerald-300 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-50"
+        >
+          <Plus size={15} />
+          הוסף משימה חוזרת
+        </button>
+      )}
     </Modal>
   )
 }

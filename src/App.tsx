@@ -9,6 +9,7 @@ import FaultsPage from './pages/Faults'
 import TasksPage from './pages/Tasks'
 import VendorsPage from './pages/Vendors'
 import TeamPage from './pages/Team'
+import StatsPage from './pages/Stats'
 
 export default function App() {
   const [session, setSession] = useState<Session | null>(null)
@@ -70,6 +71,7 @@ export default function App() {
         <Route path="/tasks" element={<TasksPage />} />
         <Route path="/vendors" element={<VendorsPage />} />
         {isAdmin && <Route path="/team" element={<TeamPage />} />}
+        {isAdmin && <Route path="/stats" element={<StatsPage />} />}
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
