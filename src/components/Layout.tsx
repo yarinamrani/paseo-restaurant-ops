@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom'
-import { Wrench, ClipboardList, Users, LogOut, UtensilsCrossed } from 'lucide-react'
+import { Wrench, ClipboardList, Users, LogOut, UtensilsCrossed, ShieldCheck } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 
 const tabs = [
@@ -8,7 +8,8 @@ const tabs = [
   { to: '/vendors', label: 'אנשי מקצוע', icon: Users },
 ]
 
-export default function Layout() {
+export default function Layout({ isAdmin = false }: { isAdmin?: boolean }) {
+  const navTabs = isAdmin ? [...tabs, { to: '/team', label: 'צוות', icon: ShieldCheck }] : tabs
   return (
     <div className="min-h-screen">
       <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur">
@@ -30,14 +31,14 @@ export default function Layout() {
             יציאה
           </button>
         </div>
-        <nav className="mx-auto flex max-w-4xl gap-1 px-4">
-          {tabs.map(({ to, label, icon: Icon }) => (
+        <nav className="mx-auto flex max-w-4xl gap-1 overflow-x-auto px-4">
+          {navTabs.map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}
               to={to}
               end={to === '/'}
               className={({ isActive }) =>
-                `flex items-center gap-1.5 border-b-2 px-4 py-2.5 text-sm font-medium transition-colors ${
+                `flex shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-4 py-2.5 text-sm font-medium transition-colors ${
                   isActive
                     ? 'border-emerald-600 text-emerald-700'
                     : 'border-transparent text-slate-500 hover:text-slate-800'
