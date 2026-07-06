@@ -1,0 +1,58 @@
+import { NavLink, Outlet } from 'react-router-dom'
+import { Wrench, ClipboardList, Users, LogOut, UtensilsCrossed } from 'lucide-react'
+import { supabase } from '../lib/supabase'
+
+const tabs = [
+  { to: '/', label: 'תקלות', icon: Wrench },
+  { to: '/tasks', label: 'משימות', icon: ClipboardList },
+  { to: '/vendors', label: 'אנשי מקצוע', icon: Users },
+]
+
+export default function Layout() {
+  return (
+    <div className="min-h-screen">
+      <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur">
+        <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3">
+          <div className="flex items-center gap-2">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-600 text-white">
+              <UtensilsCrossed size={18} />
+            </div>
+            <div>
+              <h1 className="text-lg font-bold leading-tight text-slate-900">Paseo Ops</h1>
+              <p className="text-xs text-slate-500">ניהול תפעול המסעדה</p>
+            </div>
+          </div>
+          <button
+            onClick={() => supabase.auth.signOut()}
+            className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm text-slate-500 hover:bg-slate-100"
+          >
+            <LogOut size={16} className="rtl:-scale-x-100" />
+            יציאה
+          </button>
+        </div>
+        <nav className="mx-auto flex max-w-4xl gap-1 px-4">
+          {tabs.map(({ to, label, icon: Icon }) => (
+            <NavLink
+              key={to}
+              to={to}
+              end={to === '/'}
+              className={({ isActive }) =>
+                `flex items-center gap-1.5 border-b-2 px-4 py-2.5 text-sm font-medium transition-colors ${
+                  isActive
+                    ? 'border-emerald-600 text-emerald-700'
+                    : 'border-transparent text-slate-500 hover:text-slate-800'
+                }`
+              }
+            >
+              <Icon size={16} />
+              {label}
+            </NavLink>
+          ))}
+        </nav>
+      </header>
+      <main className="mx-auto max-w-4xl px-4 py-6">
+        <Outlet />
+      </main>
+    </div>
+  )
+}

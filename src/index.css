@@ -1,0 +1,20 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Heebo", "Assistant", "Rubik", "Noto Sans Hebrew", sans-serif;
+}
+
+body {
+  font-family: var(--font-sans);
+  line-height: 1.7;
+  letter-spacing: normal;
+  word-spacing: 0.05em;
+  background-color: #f8fafc;
+}
+
+/* Numbers, phones — keep LTR inside RTL text */
+.ltr-num {
+  direction: ltr;
+  unicode-bidi: isolate;
+  display: inline-block;
+}

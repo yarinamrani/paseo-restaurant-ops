@@ -1,0 +1,171 @@
+import { useEffect, useState } from 'react'
+import { Plus, Phone, Copy, Star, Pencil, Trash2 } from 'lucide-react'
+import { supabase, type Vendor } from '../lib/supabase'
+import { Modal, DialogButtons, inputCls } from './Faults'
+
+export default function VendorsPage() {
+  const [vendors, setVendors] = useState<Vendor[]>([])
+  const [editing, setEditing] = useState<Vendor | null>(null)
+  const [addOpen, setAddOpen] = useState(false)
+  const [toast, setToast] = useState<string | null>(null)
+
+  function notify(msg: string) {
+    setToast(msg)
+    setTimeout(() => setToast(null), 2500)
+  }
+
+  async function load() {
+    const { data } = await supabase.from('vendors').select('*').order('rating', { ascending: false })
+    setVendors((data as Vendor[]) ?? [])
+  }
+
+  useEffect(() => {
+    load()
+  }, [])
+
+  async function remove(v: Vendor) {
+    if (!confirm(`האם אתה בטוח שברצונך למחוק את ${v.name}?`)) return
+    await supabase.from('vendors').delete().eq('id', v.id)
+    notify('איש מקצוע נמחק בהצלחה!')
+    load()
+  }
+
+  function copyPhone(phone: string) {
+    navigator.clipboard.writeText(phone)
+    notify('המספר הועתק!')
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-xl font-bold text-slate-900">אנשי מקצוע</h2>
+          <p className="text-sm text-slate-500">{vendors.length} במאגר</p>
+        </div>
+        <button
+          onClick={() => setAddOpen(true)}
+          className="flex items-center gap-1.5 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
+        >
+          <Plus size={16} />
+          הוסף איש מקצוע
+        </button>
+      </div>
+
+      {vendors.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-slate-300 bg-white py-12 text-center text-slate-500">
+          אין אנשי מקצוע עדיין
+        </div>
+      ) : (
+        <div className="grid gap-3 sm:grid-cols-2">
+          {vendors.map((v) => (
+            <div key={v.id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+              <div className="flex items-start justify-between">
+                <div>
+                  <h3 className="font-semibold text-slate-900">{v.name}</h3>
+                  <p className="text-sm text-slate-500">{v.profession}</p>
+                </div>
+                <div className="flex gap-1">
+                  <button onClick={() => setEditing(v)} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700">
+                    <Pencil size={15} />
+                  </button>
+                  <button onClick={() => remove(v)} className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600">
+                    <Trash2 size={15} />
+                  </button>
+                </div>
+              </div>
+              <div className="mt-2 flex items-center gap-0.5">
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <Star
+                    key={n}
+                    size={15}
+                    className={n <= v.rating ? 'fill-amber-400 text-amber-400' : 'text-slate-200'}
+                  />
+                ))}
+              </div>
+              <div className="mt-3 flex items-center gap-2">
+                <a
+                  href={`tel:${v.phone}`}
+                  className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-emerald-600 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
+                >
+                  <Phone size={14} />
+                  התקשר עכשיו
+                </a>
+                <button
+                  onClick={() => copyPhone(v.phone)}
+                  title="העתק מספר"
+                  className="flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50"
+                >
+                  <Copy size={14} />
+                  <span className="ltr-num">{v.phone}</span>
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {(addOpen || editing) && (
+        <VendorDialog
+          vendor={editing}
+          onClose={() => { setAddOpen(false); setEditing(null) }}
+          onSaved={(isNew) => {
+            setAddOpen(false)
+            setEditing(null)
+            notify(isNew ? 'איש מקצוע נוסף בהצלחה!' : 'איש מקצוע עודכן בהצלחה!')
+            load()
+          }}
+        />
+      )}
+
+      {toast && (
+        <div className="fixed bottom-6 start-1/2 z-50 -translate-x-1/2 rtl:translate-x-1/2 rounded-full bg-slate-900 px-5 py-2.5 text-sm text-white shadow-lg">
+          {toast}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function VendorDialog({
+  vendor, onClose, onSaved,
+}: { vendor: Vendor | null; onClose: () => void; onSaved: (isNew: boolean) => void }) {
+  const [name, setName] = useState(vendor?.name ?? '')
+  const [profession, setProfession] = useState(vendor?.profession ?? '')
+  const [phone, setPhone] = useState(vendor?.phone ?? '')
+  const [rating, setRating] = useState(vendor?.rating ?? 3)
+  const [busy, setBusy] = useState(false)
+
+  async function save(e: React.FormEvent) {
+    e.preventDefault()
+    setBusy(true)
+    const payload = { name: name.trim(), profession: profession.trim(), phone: phone.trim(), rating }
+    if (vendor) {
+      await supabase.from('vendors').update(payload).eq('id', vendor.id)
+    } else {
+      await supabase.from('vendors').insert(payload)
+    }
+    setBusy(false)
+    onSaved(!vendor)
+  }
+
+  return (
+    <Modal title={vendor ? 'עריכת איש מקצוע' : 'איש מקצוע חדש'} onClose={onClose}>
+      <form onSubmit={save} className="space-y-3">
+        <input required autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder="שם" className={inputCls} />
+        <input required value={profession} onChange={(e) => setProfession(e.target.value)} placeholder="מקצוע (חשמלאי, אינסטלטור...)" className={inputCls} />
+        <input required value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="טלפון" dir="ltr" className={`${inputCls} placeholder:text-end`} />
+        <label className="block text-sm">
+          <span className="mb-1 block text-slate-600">{vendor ? 'דירוג' : 'דירוג התחלתי'}</span>
+          <div className="flex items-center gap-1">
+            {[1, 2, 3, 4, 5].map((n) => (
+              <button key={n} type="button" onClick={() => setRating(n)}>
+                <Star size={22} className={n <= rating ? 'fill-amber-400 text-amber-400' : 'text-slate-300'} />
+              </button>
+            ))}
+          </div>
+        </label>
+        <DialogButtons busy={busy} onCancel={onClose} submitLabel={vendor ? 'עדכן' : 'הוסף'} />
+      </form>
+    </Modal>
+  )
+}
