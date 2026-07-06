@@ -15,6 +15,15 @@ export type Vendor = {
   created_at: string
 }
 
+export const BRANCHES = ['טאלה', 'פסאו', 'אומינו'] as const
+export type Branch = (typeof BRANCHES)[number]
+
+export const branchColors: Record<string, string> = {
+  'טאלה': 'bg-violet-100 text-violet-700',
+  'פסאו': 'bg-emerald-100 text-emerald-700',
+  'אומינו': 'bg-sky-100 text-sky-700',
+}
+
 export type Task = {
   id: string
   title: string
@@ -26,6 +35,7 @@ export type Task = {
   issue_image_url: string | null
   cost: number | null
   status: 'open' | 'done'
+  branch: string
   resolution_notes: string | null
   warranty_until: string | null
   completed_at: string | null
@@ -41,6 +51,7 @@ export type AdminTask = {
   deadline: string | null
   priority: 'low' | 'medium' | 'high'
   status: 'open' | 'done'
+  branch: string
   created_by: string | null
   completed_at: string | null
   created_at: string

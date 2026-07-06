@@ -4,7 +4,7 @@ import { he } from 'date-fns/locale'
 import {
   Plus, Phone, CheckCircle2, Clock, AlertTriangle, ImagePlus, X, History, ShieldCheck,
 } from 'lucide-react'
-import { supabase, type Task, type Vendor } from '../lib/supabase'
+import { supabase, BRANCHES, branchColors, type Task, type Vendor } from '../lib/supabase'
 
 const priorityLabels: Record<string, { label: string; cls: string }> = {
   high: { label: 'דחוף', cls: 'bg-red-100 text-red-700' },
@@ -15,6 +15,7 @@ const priorityLabels: Record<string, { label: string; cls: string }> = {
 export default function FaultsPage() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [vendors, setVendors] = useState<Vendor[]>([])
+  const [branchFilter, setBranchFilter] = useState<string>('הכל')
   const [showDone, setShowDone] = useState(false)
   const [reportOpen, setReportOpen] = useState(false)
   const [closing, setClosing] = useState<Task | null>(null)
@@ -38,8 +39,9 @@ export default function FaultsPage() {
     load()
   }, [])
 
-  const open = tasks.filter((t) => t.status === 'open')
-  const done = tasks.filter((t) => t.status === 'done')
+  const filtered = branchFilter === 'הכל' ? tasks : tasks.filter((t) => t.branch === branchFilter)
+  const open = filtered.filter((t) => t.status === 'open')
+  const done = filtered.filter((t) => t.status === 'done')
   const totalCost = done.reduce((s, t) => s + (t.cost ?? 0), 0)
 
   return (
@@ -59,6 +61,8 @@ export default function FaultsPage() {
           דיווח על תקלה
         </button>
       </div>
+
+      <BranchFilter value={branchFilter} onChange={setBranchFilter} counts={tasks.filter((t) => t.status === 'open')} />
 
       {open.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-slate-300 bg-white py-12 text-center text-slate-500">
@@ -91,6 +95,7 @@ export default function FaultsPage() {
                   <div className="flex items-center gap-2">
                     <CheckCircle2 size={16} className="text-emerald-600" />
                     <span className="font-medium text-slate-700 line-through">{t.title}</span>
+                    <BranchBadge branch={t.branch} />
                   </div>
                   <span className="text-sm text-slate-500 ltr-num">₪{(t.cost ?? 0).toLocaleString()}</span>
                 </div>
@@ -162,6 +167,7 @@ function FaultCard({ task, vendors, onClose }: { task: Task; vendors: Vendor[]; 
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="font-semibold text-slate-900">{task.title}</h3>
+            <BranchBadge branch={task.branch} />
             <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${pr.cls}`}>{pr.label}</span>
             {overdue && (
               <span className="flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">
@@ -220,6 +226,7 @@ function ReportDialog({
 }: { vendors: Vendor[]; onClose: () => void; onSaved: () => void }) {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
+  const [branch, setBranch] = useState('פסאו')
   const [priority, setPriority] = useState('medium')
   const [dueDate, setDueDate] = useState('')
   const [vendorId, setVendorId] = useState('')
@@ -243,6 +250,7 @@ function ReportDialog({
     await supabase.from('tasks').insert({
       title: title.trim(),
       description: description.trim() || null,
+      branch,
       due_date: dueDate ? new Date(dueDate).toISOString() : null,
       vendor_id: vendorId || null,
       assignee_name: assignee.trim() || null,
@@ -258,6 +266,7 @@ function ReportDialog({
   return (
     <Modal title="דיווח על תקלה חדשה" onClose={onClose}>
       <form onSubmit={save} className="space-y-3">
+        <BranchSelect value={branch} onChange={setBranch} />
         <input
           required autoFocus value={title} onChange={(e) => setTitle(e.target.value)}
           placeholder="מה התקלה?" className={inputCls}
@@ -389,6 +398,65 @@ function CloseDialog({ task, onClose, onSaved }: { task: Task; onClose: () => vo
         <DialogButtons busy={busy} onCancel={onClose} submitLabel="סגור קריאה" />
       </form>
     </Modal>
+  )
+}
+
+export function BranchBadge({ branch }: { branch: string }) {
+  return (
+    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${branchColors[branch] ?? 'bg-slate-100 text-slate-600'}`}>
+      {branch}
+    </span>
+  )
+}
+
+export function BranchFilter({
+  value, onChange, counts,
+}: { value: string; onChange: (b: string) => void; counts: { branch: string }[] }) {
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {['הכל', ...BRANCHES].map((b) => {
+        const n = b === 'הכל' ? counts.length : counts.filter((t) => t.branch === b).length
+        const active = value === b
+        return (
+          <button
+            key={b}
+            onClick={() => onChange(b)}
+            className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors ${
+              active
+                ? 'bg-slate-900 text-white'
+                : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+            }`}
+          >
+            {b}
+            {n > 0 && <span className="ms-1.5 text-xs opacity-70 ltr-num">{n}</span>}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+export function BranchSelect({ value, onChange }: { value: string; onChange: (b: string) => void }) {
+  return (
+    <label className="block text-sm">
+      <span className="mb-1 block text-slate-600">סניף</span>
+      <div className="grid grid-cols-3 gap-2">
+        {BRANCHES.map((b) => (
+          <button
+            key={b}
+            type="button"
+            onClick={() => onChange(b)}
+            className={`rounded-lg border py-2 text-sm font-medium transition-colors ${
+              value === b
+                ? 'border-emerald-600 bg-emerald-50 text-emerald-700'
+                : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+            }`}
+          >
+            {b}
+          </button>
+        ))}
+      </div>
+    </label>
   )
 }
 

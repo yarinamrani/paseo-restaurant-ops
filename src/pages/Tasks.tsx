@@ -3,10 +3,11 @@ import { format } from 'date-fns'
 import { he } from 'date-fns/locale'
 import { Plus, CheckCircle2, Circle, Clock } from 'lucide-react'
 import { supabase, type AdminTask } from '../lib/supabase'
-import { Modal, DialogButtons, inputCls } from './Faults'
+import { Modal, DialogButtons, inputCls, BranchBadge, BranchFilter, BranchSelect } from './Faults'
 
 export default function TasksPage() {
   const [tasks, setTasks] = useState<AdminTask[]>([])
+  const [branchFilter, setBranchFilter] = useState<string>('הכל')
   const [addOpen, setAddOpen] = useState(false)
 
   async function load() {
@@ -30,8 +31,9 @@ export default function TasksPage() {
     load()
   }
 
-  const open = tasks.filter((t) => t.status === 'open')
-  const done = tasks.filter((t) => t.status === 'done')
+  const filtered = branchFilter === 'הכל' ? tasks : tasks.filter((t) => t.branch === branchFilter)
+  const open = filtered.filter((t) => t.status === 'open')
+  const done = filtered.filter((t) => t.status === 'done')
 
   return (
     <div className="space-y-4">
@@ -49,7 +51,9 @@ export default function TasksPage() {
         </button>
       </div>
 
-      {tasks.length === 0 ? (
+      <BranchFilter value={branchFilter} onChange={setBranchFilter} counts={tasks.filter((t) => t.status === 'open')} />
+
+      {filtered.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-slate-300 bg-white py-12 text-center text-slate-500">
           אין משימות עדיין
           <div className="mt-2">
@@ -73,6 +77,7 @@ export default function TasksPage() {
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className={`font-medium text-slate-900 ${t.status === 'done' ? 'line-through' : ''}`}>{t.title}</span>
+                    <BranchBadge branch={t.branch} />
                     {t.priority === 'high' && t.status === 'open' && (
                       <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">דחוף</span>
                     )}
@@ -105,6 +110,7 @@ export default function TasksPage() {
 function AddTaskDialog({ onClose, onSaved }: { onClose: () => void; onSaved: () => void }) {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
+  const [branch, setBranch] = useState('פסאו')
   const [assignee, setAssignee] = useState('')
   const [deadline, setDeadline] = useState('')
   const [priority, setPriority] = useState('medium')
@@ -117,6 +123,7 @@ function AddTaskDialog({ onClose, onSaved }: { onClose: () => void; onSaved: () 
     await supabase.from('admin_tasks').insert({
       title: title.trim(),
       description: description.trim() || null,
+      branch,
       assignee_name: assignee.trim() || null,
       deadline: deadline ? new Date(deadline).toISOString() : null,
       priority,
@@ -129,6 +136,7 @@ function AddTaskDialog({ onClose, onSaved }: { onClose: () => void; onSaved: () 
   return (
     <Modal title="משימה חדשה" onClose={onClose}>
       <form onSubmit={save} className="space-y-3">
+        <BranchSelect value={branch} onChange={setBranch} />
         <input required autoFocus value={title} onChange={(e) => setTitle(e.target.value)} placeholder="מה צריך לעשות?" className={inputCls} />
         <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="הוסף פרטים נוספים..." rows={2} className={inputCls} />
         <div className="grid grid-cols-2 gap-3">
