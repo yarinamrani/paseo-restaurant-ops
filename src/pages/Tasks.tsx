@@ -8,6 +8,7 @@ import { Modal, DialogButtons, inputCls, BranchBadge, BranchFilter, BranchSelect
 export default function TasksPage() {
   const [tasks, setTasks] = useState<AdminTask[]>([])
   const [branchFilter, setBranchFilter] = useState<string>('הכל')
+  const [assigneeFilter, setAssigneeFilter] = useState<string>('כולם')
   const [addOpen, setAddOpen] = useState(false)
   const [editing, setEditing] = useState<AdminTask | null>(null)
   const [recurringOpen, setRecurringOpen] = useState(false)
@@ -33,7 +34,10 @@ export default function TasksPage() {
     load()
   }
 
-  const filtered = branchFilter === 'הכל' ? tasks : tasks.filter((t) => t.branch === branchFilter)
+  const assignees = [...new Set(tasks.map((t) => t.assignee_name?.trim()).filter(Boolean))] as string[]
+  const byBranch = branchFilter === 'הכל' ? tasks : tasks.filter((t) => t.branch === branchFilter)
+  const filtered =
+    assigneeFilter === 'כולם' ? byBranch : byBranch.filter((t) => t.assignee_name?.trim() === assigneeFilter)
   const open = filtered.filter((t) => t.status === 'open')
   const done = filtered.filter((t) => t.status === 'done')
 
@@ -64,6 +68,25 @@ export default function TasksPage() {
       </div>
 
       <BranchFilter value={branchFilter} onChange={setBranchFilter} counts={tasks.filter((t) => t.status === 'open')} />
+
+      {assignees.length > 0 && (
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="text-xs text-slate-400">באחריות:</span>
+          {['כולם', ...assignees].map((a) => (
+            <button
+              key={a}
+              onClick={() => setAssigneeFilter(a)}
+              className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                assigneeFilter === a
+                  ? 'bg-emerald-600 text-white'
+                  : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+              }`}
+            >
+              {a}
+            </button>
+          ))}
+        </div>
+      )}
 
       {filtered.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-slate-300 bg-white py-12 text-center text-slate-500">
