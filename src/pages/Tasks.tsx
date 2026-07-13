@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { format } from 'date-fns'
 import { he } from 'date-fns/locale'
-import { Plus, CheckCircle2, Circle, Clock, Pencil, Repeat, Trash2, Pause, Play, ImagePlus } from 'lucide-react'
+import { Plus, CheckCircle2, Circle, Clock, Pencil, Repeat, Trash2, Pause, Play, ImagePlus, List, SquareKanban, CalendarDays } from 'lucide-react'
 import { supabase, isOpenStatus, statusLabel, statusCls, type AdminTask, type RecurringTask } from '../lib/supabase'
 import ItemDetail from '../components/ItemDetail'
+import KanbanView from '../components/KanbanView'
+import CalendarView from '../components/CalendarView'
 import { prepareImage } from '../lib/images'
 import { Modal, DialogButtons, inputCls, BranchBadge, AreaBadge, BranchFilter, BranchSelect, AreaSelect, AssigneeSelect, resolveAssignee } from './Faults'
 import { useOrg } from '../lib/org'
@@ -18,6 +20,21 @@ export default function TasksPage() {
   const [recurringOpen, setRecurringOpen] = useState(false)
   const [detail, setDetail] = useState<AdminTask | null>(null)
   const [myId, setMyId] = useState<string | null>(null)
+  const [view, setView] = useState<'list' | 'kanban' | 'calendar'>(
+    () => (localStorage.getItem('tasksView') as 'list' | 'kanban' | 'calendar') || 'list'
+  )
+
+  function switchView(v: 'list' | 'kanban' | 'calendar') {
+    setView(v)
+    localStorage.setItem('tasksView', v)
+  }
+
+  async function changeStatus(id: string, status: string) {
+    const patch: Record<string, unknown> = { status }
+    if (status === 'done') patch.completed_at = new Date().toISOString()
+    await supabase.from('admin_tasks').update(patch).eq('id', id)
+    load()
+  }
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setMyId(data.user?.id ?? null))
@@ -114,7 +131,30 @@ export default function TasksPage() {
         </div>
       )}
 
-      {filtered.length === 0 ? (
+      <div className="flex items-center gap-1">
+        {([
+          { v: 'list' as const, icon: List, label: 'רשימה' },
+          { v: 'kanban' as const, icon: SquareKanban, label: 'קנבן' },
+          { v: 'calendar' as const, icon: CalendarDays, label: 'לוח שנה' },
+        ]).map(({ v, icon: Icon, label }) => (
+          <button
+            key={v}
+            onClick={() => switchView(v)}
+            className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+              view === v ? 'bg-slate-900 text-white' : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+            }`}
+          >
+            <Icon size={14} />
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {view === 'kanban' ? (
+        <KanbanView tasks={filtered} onOpen={setDetail} onStatusChange={changeStatus} />
+      ) : view === 'calendar' ? (
+        <CalendarView tasks={filtered} onOpen={setDetail} />
+      ) : filtered.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-slate-300 bg-white py-12 text-center text-slate-500">
           אין משימות עדיין
           <div className="mt-2">

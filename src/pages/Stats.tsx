@@ -1,26 +1,73 @@
 import { useEffect, useState } from 'react'
 import { format } from 'date-fns'
 import { he } from 'date-fns/locale'
-import { TrendingUp, Wrench, ShieldCheck } from 'lucide-react'
-import { supabase, badgeColorFor, BAR_PALETTE, isOpenStatus, type Task, type Vendor } from '../lib/supabase'
+import { TrendingUp, Wrench, ShieldCheck, Download, AlertTriangle, Timer, Target, Users } from 'lucide-react'
+import { supabase, badgeColorFor, BAR_PALETTE, isOpenStatus, statusLabel, type Task, type AdminTask, type Vendor } from '../lib/supabase'
 import { useOrg } from '../lib/org'
 
 export default function StatsPage() {
-  const { businesses } = useOrg()
+  const { businesses, bizName } = useOrg()
   const activeBiz = businesses.filter((b) => b.active)
   const barColor = (i: number) => BAR_PALETTE[i % BAR_PALETTE.length]
   const [tasks, setTasks] = useState<Task[]>([])
+  const [adminTasks, setAdminTasks] = useState<AdminTask[]>([])
   const [vendors, setVendors] = useState<Vendor[]>([])
 
   useEffect(() => {
     Promise.all([
       supabase.from('tasks').select('*').is('deleted_at', null),
+      supabase.from('admin_tasks').select('*').is('deleted_at', null),
       supabase.from('vendors').select('*'),
-    ]).then(([t, v]) => {
+    ]).then(([t, a, v]) => {
       setTasks((t.data as Task[]) ?? [])
+      setAdminTasks((a.data as AdminTask[]) ?? [])
       setVendors((v.data as Vendor[]) ?? [])
     })
   }, [])
+
+  // --- KPIs ---
+  const nowTs = Date.now()
+  const overdueCount =
+    tasks.filter((t) => isOpenStatus(t.status) && t.due_date && new Date(t.due_date).getTime() < nowTs).length +
+    adminTasks.filter((t) => isOpenStatus(t.status) && t.deadline && new Date(t.deadline).getTime() < nowTs).length
+
+  const resolvedFaults = tasks.filter((t) => t.status === 'done' && t.completed_at)
+  const avgResolutionDays = resolvedFaults.length
+    ? resolvedFaults.reduce((s, t) => s + (new Date(t.completed_at!).getTime() - new Date(t.created_at).getTime()), 0) /
+      resolvedFaults.length / 86400000
+    : null
+
+  const doneWithDeadline = adminTasks.filter((t) => t.status === 'done' && t.completed_at && t.deadline)
+  const onTimePct = doneWithDeadline.length
+    ? Math.round((doneWithDeadline.filter((t) => new Date(t.completed_at!) <= new Date(new Date(t.deadline!).getTime() + 86399000)).length / doneWithDeadline.length) * 100)
+    : null
+
+  const openByAssignee = (() => {
+    const map = new Map<string, number>()
+    for (const t of [...tasks, ...adminTasks]) {
+      if (!isOpenStatus(t.status)) continue
+      const name = t.assignee_name?.trim() || 'ללא אחראי'
+      map.set(name, (map.get(name) ?? 0) + 1)
+    }
+    return [...map.entries()].sort((a, b) => b[1] - a[1])
+  })()
+
+  function exportCsv() {
+    const esc = (v: unknown) => '"' + String(v ?? '').replaceAll('"', '""') + '"'
+    const fmtD = (v: string | null) => (v ? format(new Date(v), 'dd/MM/yyyy') : '')
+    const header = ['סוג', 'כותרת', 'עסק', 'סטטוס', 'דחיפות', 'אחראי', 'דד-ליין', 'נוצר', 'הושלם', 'עלות']
+    const rows = [
+      ...tasks.map((t) => ['תקלה', t.title, bizName(t.business_id, t.branch), statusLabel(t.status), t.priority, t.assignee_name ?? '', fmtD(t.due_date), fmtD(t.created_at), fmtD(t.completed_at), t.cost ?? '']),
+      ...adminTasks.map((t) => ['משימה', t.title, bizName(t.business_id, t.branch), statusLabel(t.status), t.priority, t.assignee_name ?? '', fmtD(t.deadline), fmtD(t.created_at), fmtD(t.completed_at), '']),
+    ]
+    const csv = '\ufeff' + [header, ...rows].map((r) => r.map(esc).join(',')).join('\n')
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
+    const a = document.createElement('a')
+    a.href = URL.createObjectURL(blob)
+    a.download = `paseo-ops-${format(new Date(), 'yyyy-MM-dd')}.csv`
+    a.click()
+    URL.revokeObjectURL(a.href)
+  }
 
   const done = tasks.filter((t) => t.status === 'done' && t.completed_at)
   const now = new Date()
@@ -63,9 +110,34 @@ export default function StatsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-xl font-bold text-slate-900">דשבורד עלויות</h2>
-        <p className="text-sm text-slate-500">תיקונים ותחזוקה לפי סניף</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-xl font-bold text-slate-900">דשבורד</h2>
+          <p className="text-sm text-slate-500">תפעול, עלויות ועומסים</p>
+        </div>
+        <button
+          onClick={exportCsv}
+          className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50"
+        >
+          <Download size={15} />
+          ייצוא CSV
+        </button>
+      </div>
+
+      {/* KPI row */}
+      <div className="grid grid-cols-3 gap-3">
+        <div className={`rounded-2xl border p-4 ${overdueCount > 0 ? 'border-red-200 bg-red-50' : 'border-slate-200 bg-white'}`}>
+          <p className="flex items-center gap-1 text-xs text-slate-500"><AlertTriangle size={12} />באיחור</p>
+          <p className={`mt-1 text-xl font-bold ltr-num ${overdueCount > 0 ? 'text-red-600' : 'text-slate-900'}`}>{overdueCount}</p>
+        </div>
+        <div className="rounded-2xl border border-slate-200 bg-white p-4">
+          <p className="flex items-center gap-1 text-xs text-slate-500"><Timer size={12} />זמן טיפול ממוצע בתקלה</p>
+          <p className="mt-1 text-xl font-bold text-slate-900 ltr-num">{avgResolutionDays === null ? '—' : avgResolutionDays < 1 ? '<1 יום' : Math.round(avgResolutionDays) + ' ימים'}</p>
+        </div>
+        <div className="rounded-2xl border border-slate-200 bg-white p-4">
+          <p className="flex items-center gap-1 text-xs text-slate-500"><Target size={12} />עמידה בזמנים</p>
+          <p className="mt-1 text-xl font-bold text-slate-900 ltr-num">{onTimePct === null ? '—' : onTimePct + '%'}</p>
+        </div>
       </div>
 
       {/* This month cards */}
@@ -161,6 +233,29 @@ export default function StatsPage() {
           )}
         </section>
       </div>
+
+      {/* Open load per assignee */}
+      <section className="rounded-2xl border border-slate-200 bg-white p-4">
+        <h3 className="mb-3 flex items-center gap-1.5 text-sm font-bold text-slate-500">
+          <Users size={15} />
+          עומס פתוח לפי אחראי
+        </h3>
+        {openByAssignee.length === 0 ? (
+          <p className="text-sm text-slate-400">אין פריטים פתוחים 🎉</p>
+        ) : (
+          <div className="space-y-2">
+            {openByAssignee.map(([name, count]) => (
+              <div key={name} className="flex items-center gap-2">
+                <span className="w-28 shrink-0 truncate text-sm text-slate-700">{name}</span>
+                <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-slate-100">
+                  <div className="h-full rounded-full bg-emerald-500" style={{ width: `${(count / openByAssignee[0][1]) * 100}%` }} />
+                </div>
+                <span className="w-6 text-end text-sm font-bold text-slate-900 ltr-num">{count}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
 
       {/* Active warranties */}
       <section className="rounded-2xl border border-slate-200 bg-white p-4">
