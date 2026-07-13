@@ -56,6 +56,9 @@ export default function Layout({ isAdmin = false }: { isAdmin?: boolean }) {
       <main className="mx-auto max-w-4xl px-4 py-6">
         <Outlet />
       </main>
+      <footer className="py-4 text-center text-[10px] text-slate-300">
+        גרסה <span className="ltr-num">{__BUILD_ID__}</span>
+      </footer>
     </div>
   )
 }
