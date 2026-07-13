@@ -65,6 +65,7 @@ export type AdminTask = {
   priority: 'low' | 'medium' | 'high'
   status: 'open' | 'done'
   branch: string
+  image_url: string | null
   created_by: string | null
   completed_at: string | null
   created_at: string

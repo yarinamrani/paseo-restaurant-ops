@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { format } from 'date-fns'
 import { he } from 'date-fns/locale'
-import { Plus, CheckCircle2, Circle, Clock, Pencil, Repeat, Trash2, Pause, Play } from 'lucide-react'
+import { Plus, CheckCircle2, Circle, Clock, Pencil, Repeat, Trash2, Pause, Play, ImagePlus } from 'lucide-react'
 import { supabase, type AdminTask, type RecurringTask } from '../lib/supabase'
 import { Modal, DialogButtons, inputCls, BranchBadge, BranchFilter, BranchSelect } from './Faults'
 
@@ -131,6 +131,11 @@ export default function TasksPage() {
                     {t.assignee_name && <span>באחריות {t.assignee_name}</span>}
                   </div>
                 </div>
+                {t.image_url && (
+                  <a href={t.image_url} target="_blank" rel="noreferrer" className="shrink-0">
+                    <img src={t.image_url} alt="" className="h-14 w-14 rounded-lg object-cover" />
+                  </a>
+                )}
                 <button
                   onClick={() => setEditing(t)}
                   className="mt-0.5 shrink-0 rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
@@ -166,11 +171,21 @@ function TaskDialog({
   const [assignee, setAssignee] = useState(task?.assignee_name ?? '')
   const [deadline, setDeadline] = useState(task?.deadline ? task.deadline.slice(0, 10) : '')
   const [priority, setPriority] = useState<string>(task?.priority ?? 'medium')
+  const [file, setFile] = useState<File | null>(null)
   const [busy, setBusy] = useState(false)
+  const fileRef = useRef<HTMLInputElement>(null)
 
   async function save(e: React.FormEvent) {
     e.preventDefault()
     setBusy(true)
+    let imageUrl: string | null = task?.image_url ?? null
+    if (file) {
+      const path = `${crypto.randomUUID()}-${file.name}`
+      const { error } = await supabase.storage.from('task-images').upload(path, file)
+      if (!error) {
+        imageUrl = supabase.storage.from('task-images').getPublicUrl(path).data.publicUrl
+      }
+    }
     const payload = {
       title: title.trim(),
       description: description.trim() || null,
@@ -178,6 +193,7 @@ function TaskDialog({
       assignee_name: assignee.trim() || null,
       deadline: deadline ? new Date(deadline).toISOString() : null,
       priority,
+      image_url: imageUrl,
     }
     if (task) {
       await supabase.from('admin_tasks').update(payload).eq('id', task.id)
@@ -218,6 +234,16 @@ function TaskDialog({
             <option value="low">נמוך</option>
           </select>
         </label>
+        <div>
+          <input ref={fileRef} type="file" accept="image/*" hidden onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+          <button
+            type="button" onClick={() => fileRef.current?.click()}
+            className="flex items-center gap-1.5 rounded-lg border border-dashed border-slate-300 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50"
+          >
+            <ImagePlus size={15} />
+            {file ? file.name : task?.image_url ? 'החלף את התמונה' : 'צרף תמונה'}
+          </button>
+        </div>
         <DialogButtons busy={busy} onCancel={onClose} submitLabel={task ? 'שמור שינויים' : 'צור משימה'} />
       </form>
     </Modal>
