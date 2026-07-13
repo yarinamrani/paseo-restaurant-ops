@@ -4,9 +4,11 @@ import { he } from 'date-fns/locale'
 import { Plus, CheckCircle2, Circle, Clock, Pencil, Repeat, Trash2, Pause, Play, ImagePlus } from 'lucide-react'
 import { supabase, type AdminTask, type RecurringTask } from '../lib/supabase'
 import { prepareImage } from '../lib/images'
-import { Modal, DialogButtons, inputCls, BranchBadge, BranchFilter, BranchSelect } from './Faults'
+import { Modal, DialogButtons, inputCls, BranchBadge, AreaBadge, BranchFilter, BranchSelect, AreaSelect } from './Faults'
+import { useOrg } from '../lib/org'
 
 export default function TasksPage() {
+  const { bizName, areaName } = useOrg()
   const [tasks, setTasks] = useState<AdminTask[]>([])
   const [branchFilter, setBranchFilter] = useState<string>('הכל')
   const [assigneeFilter, setAssigneeFilter] = useState<string>('כולם')
@@ -36,7 +38,7 @@ export default function TasksPage() {
   }
 
   const assignees = [...new Set(tasks.map((t) => t.assignee_name?.trim()).filter(Boolean))] as string[]
-  const byBranch = branchFilter === 'הכל' ? tasks : tasks.filter((t) => t.branch === branchFilter)
+  const byBranch = branchFilter === 'הכל' ? tasks : tasks.filter((t) => t.business_id === branchFilter)
   const filtered =
     assigneeFilter === 'כולם' ? byBranch : byBranch.filter((t) => t.assignee_name?.trim() === assigneeFilter)
   const open = filtered.filter((t) => t.status === 'open')
@@ -113,7 +115,8 @@ export default function TasksPage() {
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className={`font-medium text-slate-900 ${t.status === 'done' ? 'line-through' : ''}`}>{t.title}</span>
-                    <BranchBadge branch={t.branch} />
+                    <BranchBadge name={bizName(t.business_id, t.branch)} />
+                    <AreaBadge name={areaName(t.area_id)} />
                     {t.priority === 'high' && t.status === 'open' && (
                       <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">דחוף</span>
                     )}
@@ -166,9 +169,12 @@ export default function TasksPage() {
 function TaskDialog({
   task, onClose, onSaved,
 }: { task: AdminTask | null; onClose: () => void; onSaved: () => void }) {
+  const { businesses, bizName } = useOrg()
+  const defaultBiz = businesses.find((b) => b.name === 'פסאו')?.id ?? businesses.find((b) => b.active)?.id ?? ''
   const [title, setTitle] = useState(task?.title ?? '')
   const [description, setDescription] = useState(task?.description ?? '')
-  const [branch, setBranch] = useState(task?.branch ?? 'פסאו')
+  const [bizId, setBizId] = useState(task?.business_id ?? defaultBiz)
+  const [areaId, setAreaId] = useState(task?.area_id ?? '')
   const [assignee, setAssignee] = useState(task?.assignee_name ?? '')
   const [deadline, setDeadline] = useState(task?.deadline ? task.deadline.slice(0, 10) : '')
   const [priority, setPriority] = useState<string>(task?.priority ?? 'medium')
@@ -203,7 +209,9 @@ function TaskDialog({
     const payload = {
       title: title.trim(),
       description: description.trim() || null,
-      branch,
+      branch: bizName(bizId, 'פסאו'),
+      business_id: bizId || null,
+      area_id: areaId || null,
       assignee_name: assignee.trim() || null,
       deadline: deadline ? new Date(deadline).toISOString() : null,
       priority,
@@ -227,8 +235,9 @@ function TaskDialog({
   return (
     <Modal title={task ? `עריכת משימה — ${task.title}` : 'משימה חדשה'} onClose={onClose}>
       <form onSubmit={save} className="space-y-3">
-        <BranchSelect value={branch} onChange={setBranch} />
+        <BranchSelect value={bizId} onChange={(id) => { setBizId(id); setAreaId('') }} />
         <input required autoFocus value={title} onChange={(e) => setTitle(e.target.value)} placeholder="מה צריך לעשות?" className={inputCls} />
+        <AreaSelect businessId={bizId} value={areaId} onChange={setAreaId} />
         <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="הוסף פרטים נוספים..." rows={2} className={inputCls} />
         <div className="grid grid-cols-2 gap-3">
           <label className="block text-sm">
@@ -284,10 +293,12 @@ const freqLabel = (days: number) =>
   FREQUENCIES.find((f) => f.days === days)?.label ?? `כל ${days} ימים`
 
 function RecurringModal({ onClose }: { onClose: () => void }) {
+  const { businesses, bizName } = useOrg()
+  const defaultBiz = businesses.find((b) => b.name === 'פסאו')?.id ?? businesses.find((b) => b.active)?.id ?? ''
   const [items, setItems] = useState<RecurringTask[]>([])
   const [adding, setAdding] = useState(false)
   const [title, setTitle] = useState('')
-  const [branch, setBranch] = useState('פסאו')
+  const [bizId, setBizId] = useState(defaultBiz)
   const [assignee, setAssignee] = useState('')
   const [intervalDays, setIntervalDays] = useState(30)
   const [firstDue, setFirstDue] = useState('')
@@ -307,7 +318,8 @@ function RecurringModal({ onClose }: { onClose: () => void }) {
     setBusy(true)
     await supabase.from('recurring_tasks').insert({
       title: title.trim(),
-      branch,
+      branch: bizName(bizId, 'פסאו'),
+      business_id: bizId || null,
       assignee_name: assignee.trim() || null,
       interval_days: intervalDays,
       next_due: firstDue,
@@ -350,7 +362,7 @@ function RecurringModal({ onClose }: { onClose: () => void }) {
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-1.5">
                   <span className="text-sm font-medium text-slate-900">{r.title}</span>
-                  <BranchBadge branch={r.branch} />
+                  <BranchBadge name={bizName(r.business_id, r.branch)} />
                 </div>
                 <p className="mt-0.5 text-xs text-slate-500">
                   {freqLabel(r.interval_days)} · {r.active ? `הבאה: ${new Date(r.next_due).toLocaleDateString('he-IL')}` : 'מושהית'}
@@ -373,7 +385,7 @@ function RecurringModal({ onClose }: { onClose: () => void }) {
       {adding ? (
         <form onSubmit={add} className="space-y-3 rounded-xl border border-emerald-200 bg-emerald-50/40 p-3">
           <input required autoFocus value={title} onChange={(e) => setTitle(e.target.value)} placeholder="מה המשימה? (ניקוי מנדפים...)" className={inputCls} />
-          <BranchSelect value={branch} onChange={setBranch} />
+          <BranchSelect value={bizId} onChange={setBizId} />
           <div className="grid grid-cols-2 gap-3">
             <label className="block text-sm">
               <span className="mb-1 block text-slate-600">תדירות</span>

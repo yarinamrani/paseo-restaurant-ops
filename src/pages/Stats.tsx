@@ -2,15 +2,13 @@ import { useEffect, useState } from 'react'
 import { format } from 'date-fns'
 import { he } from 'date-fns/locale'
 import { TrendingUp, Wrench, ShieldCheck } from 'lucide-react'
-import { supabase, BRANCHES, branchColors, type Task, type Vendor } from '../lib/supabase'
-
-const branchBarColors: Record<string, string> = {
-  'טאלה': 'bg-violet-500',
-  'פסאו': 'bg-emerald-500',
-  'אומינו': 'bg-sky-500',
-}
+import { supabase, badgeColorFor, BAR_PALETTE, type Task, type Vendor } from '../lib/supabase'
+import { useOrg } from '../lib/org'
 
 export default function StatsPage() {
+  const { businesses } = useOrg()
+  const activeBiz = businesses.filter((b) => b.active)
+  const barColor = (i: number) => BAR_PALETTE[i % BAR_PALETTE.length]
   const [tasks, setTasks] = useState<Task[]>([])
   const [vendors, setVendors] = useState<Vendor[]>([])
 
@@ -40,7 +38,7 @@ export default function StatsPage() {
     const key = monthKey(d)
     const inMonth = done.filter((t) => monthKey(new Date(t.completed_at!)) === key)
     const byBranch: Record<string, number> = {}
-    for (const b of BRANCHES) byBranch[b] = costOf(inMonth.filter((t) => t.branch === b))
+    for (const b of activeBiz) byBranch[b.id] = costOf(inMonth.filter((t) => t.business_id === b.id))
     months.push({ key, label: format(d, 'MMM', { locale: he }), byBranch, total: costOf(inMonth) })
   }
   const maxMonth = Math.max(...months.map((m) => m.total), 1)
@@ -52,9 +50,11 @@ export default function StatsPage() {
     .sort((a, b) => b.total - a.total)
     .slice(0, 5)
 
-  const openByBranch = BRANCHES.map((b) => ({
-    branch: b,
-    count: tasks.filter((t) => t.status === 'open' && t.branch === b).length,
+  const openByBranch = activeBiz.map((b, i) => ({
+    id: b.id,
+    name: b.name,
+    idx: i,
+    count: tasks.filter((t) => t.status === 'open' && t.business_id === b.id).length,
   }))
 
   const activeWarranties = done.filter(
@@ -78,11 +78,11 @@ export default function StatsPage() {
             <p className="text-xs text-slate-500">סה"כ החודש</p>
             <p className="mt-1 text-xl font-bold text-slate-900 ltr-num">₪{costOf(monthDone).toLocaleString()}</p>
           </div>
-          {BRANCHES.map((b) => (
-            <div key={b} className="rounded-2xl border border-slate-200 bg-white p-4">
-              <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${branchColors[b]}`}>{b}</span>
+          {activeBiz.map((b, i) => (
+            <div key={b.id} className="rounded-2xl border border-slate-200 bg-white p-4">
+              <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${badgeColorFor(b.name, i)}`}>{b.name}</span>
               <p className="mt-1.5 text-xl font-bold text-slate-900 ltr-num">
-                ₪{costOf(monthDone.filter((t) => t.branch === b)).toLocaleString()}
+                ₪{costOf(monthDone.filter((t) => t.business_id === b.id)).toLocaleString()}
               </p>
             </div>
           ))}
@@ -102,12 +102,12 @@ export default function StatsPage() {
                 {m.total > 0 ? `₪${m.total.toLocaleString()}` : ''}
               </span>
               <div className="flex w-full max-w-10 flex-col-reverse overflow-hidden rounded-t-md" style={{ height: `${Math.max((m.total / maxMonth) * 120, m.total > 0 ? 6 : 2)}px` }}>
-                {BRANCHES.map((b) =>
-                  m.byBranch[b] > 0 ? (
+                {activeBiz.map((b, i) =>
+                  m.byBranch[b.id] > 0 ? (
                     <div
-                      key={b}
-                      className={branchBarColors[b]}
-                      style={{ height: `${(m.byBranch[b] / m.total) * 100}%` }}
+                      key={b.id}
+                      className={barColor(i)}
+                      style={{ height: `${(m.byBranch[b.id] / m.total) * 100}%` }}
                     />
                   ) : null
                 )}
@@ -118,10 +118,10 @@ export default function StatsPage() {
           ))}
         </div>
         <div className="mt-3 flex justify-center gap-4">
-          {BRANCHES.map((b) => (
-            <span key={b} className="flex items-center gap-1.5 text-xs text-slate-500">
-              <span className={`h-2.5 w-2.5 rounded-full ${branchBarColors[b]}`} />
-              {b}
+          {activeBiz.map((b, i) => (
+            <span key={b.id} className="flex items-center gap-1.5 text-xs text-slate-500">
+              <span className={`h-2.5 w-2.5 rounded-full ${barColor(i)}`} />
+              {b.name}
             </span>
           ))}
         </div>
@@ -135,9 +135,9 @@ export default function StatsPage() {
             תקלות פתוחות
           </h3>
           <div className="space-y-2">
-            {openByBranch.map(({ branch, count }) => (
-              <div key={branch} className="flex items-center justify-between">
-                <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${branchColors[branch]}`}>{branch}</span>
+            {openByBranch.map(({ id, name, idx, count }) => (
+              <div key={id} className="flex items-center justify-between">
+                <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${badgeColorFor(name, idx)}`}>{name}</span>
                 <span className="font-bold text-slate-900 ltr-num">{count}</span>
               </div>
             ))}

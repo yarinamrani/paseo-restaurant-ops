@@ -10,6 +10,8 @@ import TasksPage from './pages/Tasks'
 import VendorsPage from './pages/Vendors'
 import TeamPage from './pages/Team'
 import StatsPage from './pages/Stats'
+import SettingsPage from './pages/Settings'
+import { OrgProvider } from './lib/org'
 
 export default function App() {
   const [session, setSession] = useState<Session | null>(null)
@@ -65,16 +67,19 @@ export default function App() {
   const isAdmin = role === 'admin'
 
   return (
-    <Routes>
-      <Route element={<Layout isAdmin={isAdmin} />}>
-        <Route path="/" element={<FaultsPage />} />
-        <Route path="/tasks" element={<TasksPage />} />
-        <Route path="/vendors" element={<VendorsPage />} />
-        {isAdmin && <Route path="/team" element={<TeamPage />} />}
-        {isAdmin && <Route path="/stats" element={<StatsPage />} />}
-      </Route>
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    <OrgProvider>
+      <Routes>
+        <Route element={<Layout isAdmin={isAdmin} />}>
+          <Route path="/" element={<FaultsPage />} />
+          <Route path="/tasks" element={<TasksPage />} />
+          <Route path="/vendors" element={<VendorsPage />} />
+          {isAdmin && <Route path="/team" element={<TeamPage />} />}
+          {isAdmin && <Route path="/stats" element={<StatsPage />} />}
+          {isAdmin && <Route path="/settings" element={<SettingsPage />} />}
+        </Route>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </OrgProvider>
   )
 }
 

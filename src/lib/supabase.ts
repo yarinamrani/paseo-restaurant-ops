@@ -15,13 +15,47 @@ export type Vendor = {
   created_at: string
 }
 
-export const BRANCHES = ['טאלה', 'פסאו', 'אומינו'] as const
-export type Branch = (typeof BRANCHES)[number]
+export type Business = {
+  id: string
+  name: string
+  active: boolean
+  sort_order: number
+}
+
+export type Area = {
+  id: string
+  business_id: string | null
+  name: string
+  active: boolean
+  sort_order: number
+}
+
+const BADGE_PALETTE = [
+  'bg-violet-100 text-violet-700',
+  'bg-emerald-100 text-emerald-700',
+  'bg-sky-100 text-sky-700',
+  'bg-amber-100 text-amber-700',
+  'bg-rose-100 text-rose-700',
+  'bg-indigo-100 text-indigo-700',
+]
+
+export const BAR_PALETTE = [
+  'bg-violet-500',
+  'bg-emerald-500',
+  'bg-sky-500',
+  'bg-amber-500',
+  'bg-rose-500',
+  'bg-indigo-500',
+]
 
 export const branchColors: Record<string, string> = {
-  'טאלה': 'bg-violet-100 text-violet-700',
-  'פסאו': 'bg-emerald-100 text-emerald-700',
-  'אומינו': 'bg-sky-100 text-sky-700',
+  'טאלה': BADGE_PALETTE[0],
+  'פסאו': BADGE_PALETTE[1],
+  'אומינו': BADGE_PALETTE[2],
+}
+
+export function badgeColorFor(name: string, index = 0): string {
+  return branchColors[name] ?? BADGE_PALETTE[index % BADGE_PALETTE.length]
 }
 
 export type Task = {
@@ -36,6 +70,8 @@ export type Task = {
   cost: number | null
   status: 'open' | 'done'
   branch: string
+  business_id: string | null
+  area_id: string | null
   resolution_notes: string | null
   warranty_until: string | null
   completed_at: string | null
@@ -48,6 +84,7 @@ export type RecurringTask = {
   title: string
   description: string | null
   branch: string
+  business_id: string | null
   assignee_name: string | null
   priority: string
   interval_days: number
@@ -65,6 +102,8 @@ export type AdminTask = {
   priority: 'low' | 'medium' | 'high'
   status: 'open' | 'done'
   branch: string
+  business_id: string | null
+  area_id: string | null
   image_url: string | null
   created_by: string | null
   completed_at: string | null

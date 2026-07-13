@@ -4,8 +4,9 @@ import { he } from 'date-fns/locale'
 import {
   Plus, Phone, CheckCircle2, Clock, AlertTriangle, ImagePlus, X, History, ShieldCheck, Pencil,
 } from 'lucide-react'
-import { supabase, BRANCHES, branchColors, type Task, type Vendor } from '../lib/supabase'
+import { supabase, badgeColorFor, type Task, type Vendor } from '../lib/supabase'
 import { prepareImage } from '../lib/images'
+import { useOrg } from '../lib/org'
 
 const priorityLabels: Record<string, { label: string; cls: string }> = {
   high: { label: 'דחוף', cls: 'bg-red-100 text-red-700' },
@@ -14,6 +15,7 @@ const priorityLabels: Record<string, { label: string; cls: string }> = {
 }
 
 export default function FaultsPage() {
+  const { bizName } = useOrg()
   const [tasks, setTasks] = useState<Task[]>([])
   const [vendors, setVendors] = useState<Vendor[]>([])
   const [branchFilter, setBranchFilter] = useState<string>('הכל')
@@ -41,7 +43,7 @@ export default function FaultsPage() {
     load()
   }, [])
 
-  const filtered = branchFilter === 'הכל' ? tasks : tasks.filter((t) => t.branch === branchFilter)
+  const filtered = branchFilter === 'הכל' ? tasks : tasks.filter((t) => t.business_id === branchFilter)
   const open = filtered.filter((t) => t.status === 'open')
   const done = filtered.filter((t) => t.status === 'done')
   const totalCost = done.reduce((s, t) => s + (t.cost ?? 0), 0)
@@ -97,7 +99,7 @@ export default function FaultsPage() {
                   <div className="flex items-center gap-2">
                     <CheckCircle2 size={16} className="text-emerald-600" />
                     <span className="font-medium text-slate-700 line-through">{t.title}</span>
-                    <BranchBadge branch={t.branch} />
+                    <BranchBadge name={bizName(t.business_id, t.branch)} />
                   </div>
                   <span className="text-sm text-slate-500 ltr-num">₪{(t.cost ?? 0).toLocaleString()}</span>
                 </div>
@@ -164,6 +166,7 @@ export default function FaultsPage() {
 function FaultCard({
   task, vendors, onClose, onEdit,
 }: { task: Task; vendors: Vendor[]; onClose: () => void; onEdit: () => void }) {
+  const { bizName, areaName } = useOrg()
   const vendor = vendors.find((v) => v.id === task.vendor_id)
   const overdue = task.due_date && new Date(task.due_date) < new Date()
   const pr = priorityLabels[task.priority] ?? priorityLabels.medium
@@ -174,7 +177,8 @@ function FaultCard({
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="font-semibold text-slate-900">{task.title}</h3>
-            <BranchBadge branch={task.branch} />
+            <BranchBadge name={bizName(task.business_id, task.branch)} />
+            <AreaBadge name={areaName(task.area_id)} />
             <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${pr.cls}`}>{pr.label}</span>
             {overdue && (
               <span className="flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">
@@ -239,9 +243,12 @@ function FaultCard({
 function ReportDialog({
   task, vendors, onClose, onSaved,
 }: { task: Task | null; vendors: Vendor[]; onClose: () => void; onSaved: () => void }) {
+  const { businesses, bizName } = useOrg()
+  const defaultBiz = businesses.find((b) => b.name === 'פסאו')?.id ?? businesses.find((b) => b.active)?.id ?? ''
   const [title, setTitle] = useState(task?.title ?? '')
   const [description, setDescription] = useState(task?.description ?? '')
-  const [branch, setBranch] = useState(task?.branch ?? 'פסאו')
+  const [bizId, setBizId] = useState(task?.business_id ?? defaultBiz)
+  const [areaId, setAreaId] = useState(task?.area_id ?? '')
   const [priority, setPriority] = useState<string>(task?.priority ?? 'medium')
   const [dueDate, setDueDate] = useState(task?.due_date ? task.due_date.slice(0, 10) : '')
   const [vendorId, setVendorId] = useState(task?.vendor_id ?? '')
@@ -277,7 +284,9 @@ function ReportDialog({
     const payload = {
       title: title.trim(),
       description: description.trim() || null,
-      branch,
+      branch: bizName(bizId, 'פסאו'),
+      business_id: bizId || null,
+      area_id: areaId || null,
       due_date: dueDate ? new Date(dueDate).toISOString() : null,
       vendor_id: vendorId || null,
       assignee_name: assignee.trim() || null,
@@ -301,11 +310,12 @@ function ReportDialog({
   return (
     <Modal title={task ? `עריכת תקלה — ${task.title}` : 'דיווח על תקלה חדשה'} onClose={onClose}>
       <form onSubmit={save} className="space-y-3">
-        <BranchSelect value={branch} onChange={setBranch} />
+        <BranchSelect value={bizId} onChange={(id) => { setBizId(id); setAreaId('') }} />
         <input
           required autoFocus value={title} onChange={(e) => setTitle(e.target.value)}
           placeholder="מה התקלה?" className={inputCls}
         />
+        <AreaSelect businessId={bizId} value={areaId} onChange={setAreaId} />
         <textarea
           value={description} onChange={(e) => setDescription(e.target.value)}
           placeholder="הוסף פרטים נוספים..." rows={2} className={inputCls}
@@ -443,33 +453,45 @@ function CloseDialog({ task, onClose, onSaved }: { task: Task; onClose: () => vo
   )
 }
 
-export function BranchBadge({ branch }: { branch: string }) {
+export function BranchBadge({ name, index = 0 }: { name: string; index?: number }) {
+  if (!name) return null
   return (
-    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${branchColors[branch] ?? 'bg-slate-100 text-slate-600'}`}>
-      {branch}
+    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${badgeColorFor(name, index)}`}>
+      {name}
+    </span>
+  )
+}
+
+export function AreaBadge({ name }: { name: string }) {
+  if (!name) return null
+  return (
+    <span className="rounded-full border border-slate-200 bg-white px-2 py-0.5 text-xs font-medium text-slate-500">
+      {name}
     </span>
   )
 }
 
 export function BranchFilter({
   value, onChange, counts,
-}: { value: string; onChange: (b: string) => void; counts: { branch: string }[] }) {
+}: { value: string; onChange: (id: string) => void; counts: { business_id: string | null }[] }) {
+  const { businesses } = useOrg()
+  const options = businesses.filter((b) => b.active)
   return (
     <div className="flex flex-wrap gap-1.5">
-      {['הכל', ...BRANCHES].map((b) => {
-        const n = b === 'הכל' ? counts.length : counts.filter((t) => t.branch === b).length
-        const active = value === b
+      {[{ id: 'הכל', name: 'הכל' }, ...options].map((b) => {
+        const n = b.id === 'הכל' ? counts.length : counts.filter((t) => t.business_id === b.id).length
+        const active = value === b.id
         return (
           <button
-            key={b}
-            onClick={() => onChange(b)}
+            key={b.id}
+            onClick={() => onChange(b.id)}
             className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors ${
               active
                 ? 'bg-slate-900 text-white'
                 : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
             }`}
           >
-            {b}
+            {b.name}
             {n > 0 && <span className="ms-1.5 text-xs opacity-70 ltr-num">{n}</span>}
           </button>
         )
@@ -478,26 +500,46 @@ export function BranchFilter({
   )
 }
 
-export function BranchSelect({ value, onChange }: { value: string; onChange: (b: string) => void }) {
+export function BranchSelect({ value, onChange }: { value: string; onChange: (id: string) => void }) {
+  const { businesses } = useOrg()
+  const options = businesses.filter((b) => b.active)
   return (
     <label className="block text-sm">
-      <span className="mb-1 block text-slate-600">סניף</span>
-      <div className="grid grid-cols-3 gap-2">
-        {BRANCHES.map((b) => (
+      <span className="mb-1 block text-slate-600">עסק</span>
+      <div className="flex flex-wrap gap-2">
+        {options.map((b) => (
           <button
-            key={b}
+            key={b.id}
             type="button"
-            onClick={() => onChange(b)}
-            className={`rounded-lg border py-2 text-sm font-medium transition-colors ${
-              value === b
+            onClick={() => onChange(b.id)}
+            className={`min-w-[30%] flex-1 rounded-lg border py-2 text-sm font-medium transition-colors ${
+              value === b.id
                 ? 'border-emerald-600 bg-emerald-50 text-emerald-700'
                 : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
             }`}
           >
-            {b}
+            {b.name}
           </button>
         ))}
       </div>
+    </label>
+  )
+}
+
+export function AreaSelect({
+  businessId, value, onChange,
+}: { businessId: string; value: string; onChange: (id: string) => void }) {
+  const { areas } = useOrg()
+  const options = areas.filter((a) => a.active && (!a.business_id || a.business_id === businessId))
+  return (
+    <label className="block text-sm">
+      <span className="mb-1 block text-slate-600">אזור (רשות)</span>
+      <select value={value} onChange={(e) => onChange(e.target.value)} className={inputCls}>
+        <option value="">ללא אזור</option>
+        {options.map((a) => (
+          <option key={a.id} value={a.id}>{a.name}</option>
+        ))}
+      </select>
     </label>
   )
 }

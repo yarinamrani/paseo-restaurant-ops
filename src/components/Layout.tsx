@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom'
-import { Wrench, ClipboardList, Users, LogOut, UtensilsCrossed, ShieldCheck, BarChart3 } from 'lucide-react'
+import { Wrench, ClipboardList, Users, LogOut, UtensilsCrossed, ShieldCheck, BarChart3, Settings } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 
 const tabs = [
@@ -10,7 +10,12 @@ const tabs = [
 
 export default function Layout({ isAdmin = false }: { isAdmin?: boolean }) {
   const navTabs = isAdmin
-    ? [...tabs, { to: '/stats', label: 'דשבורד', icon: BarChart3 }, { to: '/team', label: 'צוות', icon: ShieldCheck }]
+    ? [
+        ...tabs,
+        { to: '/stats', label: 'דשבורד', icon: BarChart3 },
+        { to: '/team', label: 'צוות', icon: ShieldCheck },
+        { to: '/settings', label: 'הגדרות', icon: Settings },
+      ]
     : tabs
   return (
     <div className="min-h-screen">
