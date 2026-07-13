@@ -43,8 +43,9 @@
 - נדחה: שמירת פילטרים אישיים, דוח תקלות חוזרות/ציוד
 
 ## אבטחה — יומן תיקונים
+- 2026-07-14: **Batch תיקונים בטוחים (R1-phaseA / R4 / R6).** הוסרה מדיניות ה-listing הרחבה מהדלי (תמונות עדיין נטענות — HTTP 200 מאומת; רישום כל הדלי נחסם → []); `task_history` הוקפא ל-SELECT בלבד; בוטלה הרשאת EXECUTE ל-anon/PUBLIC על `generate_recurring_tasks` ו-`get_my_role` (הבוט `wa_add_task` ומדיניות ה-RLS לא נפגעו — מאומת). ללא שינוי קוד לקוח.
 - 2026-07-14: **הוקשה הפרדת עסקים (Sprint 1 / משימה 1).** `has_business_access(null)` החזיר `true` = שורה ללא business_id נראתה חוצת-עסקים. תוקן: null→deny + CHECK constraints (NOT VALID) על tasks/admin_tasks/recurring_tasks המונעים יצירת פריט ללא עסק. אומת חי: null נדחה, שורה תקינה עוברת, גישה רגילה לא נפגעה. ללא שינוי קוד לקוח.
-- פתוח (מ-Audit 2026-07-14): R1 דלי `task-images` ציבורי + listing (קריטי, דורש Signed URLs — רולאאוט דו-שלבי); R3 אין גיבוי/PITR; R4 `task_history` mutable; R5 role ב-membership לא נאכף; R6 RPC חשופות ל-anon; R7 הגדרות Auth.
+- פתוח (מ-Audit 2026-07-14): R1 **חלקי** — הדלי עדיין public (קובץ נגיש למי שמחזיק ב-URL המדויק); השלמה = דלי פרטי + Signed URLs (phase B, מסוכן, נדחה); R3 אין גיבוי/PITR; R5 role ב-membership לא נאכף (רק admin/staff); R7 הגדרות Auth (הגנת סיסמאות דלופות + אישור מייל) — הגדרות דשבורד, לא SQL.
 
 ## נושאים פתוחים (backlog)
 - קבצים פרטיים + Signed URLs; Push לנייד; Email
