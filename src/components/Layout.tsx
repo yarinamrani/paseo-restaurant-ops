@@ -1,6 +1,7 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { Wrench, ClipboardList, Users, LogOut, UtensilsCrossed, ShieldCheck, BarChart3, Settings } from 'lucide-react'
 import { supabase } from '../lib/supabase'
+import NotificationsBell from './NotificationsBell'
 
 const tabs = [
   { to: '/', label: 'תקלות', icon: Wrench },
@@ -30,13 +31,16 @@ export default function Layout({ isAdmin = false }: { isAdmin?: boolean }) {
               <p className="text-xs text-slate-500">ניהול תפעול המסעדה</p>
             </div>
           </div>
-          <button
-            onClick={() => supabase.auth.signOut()}
-            className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm text-slate-500 hover:bg-slate-100"
-          >
-            <LogOut size={16} className="rtl:-scale-x-100" />
-            יציאה
-          </button>
+          <div className="flex items-center gap-1">
+            <NotificationsBell />
+            <button
+              onClick={() => supabase.auth.signOut()}
+              className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm text-slate-500 hover:bg-slate-100"
+            >
+              <LogOut size={16} className="rtl:-scale-x-100" />
+              יציאה
+            </button>
+          </div>
         </div>
         <nav className="mx-auto flex max-w-4xl gap-1 overflow-x-auto px-4">
           {navTabs.map(({ to, label, icon: Icon }) => (

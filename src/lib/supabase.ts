@@ -151,3 +151,28 @@ export type AdminTask = {
   completed_at: string | null
   created_at: string
 }
+
+export type AppNotification = {
+  id: number
+  user_id: string
+  title: string
+  body: string | null
+  item_kind: string | null
+  item_id: string | null
+  read_at: string | null
+  created_at: string
+}
+
+export type ItemAttachment = {
+  id: string
+  item_kind: 'fault' | 'task'
+  item_id: string
+  file_name: string
+  mime_type: string | null
+  size_bytes: number | null
+  url: string
+  storage_path: string
+  uploaded_by: string | null
+  uploaded_by_name: string | null
+  created_at: string
+}

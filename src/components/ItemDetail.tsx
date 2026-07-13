@@ -1,13 +1,16 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { format } from 'date-fns'
 import { he } from 'date-fns/locale'
-import { Send, Trash2, History, MessageCircle, Clock } from 'lucide-react'
+import { Send, Trash2, History, MessageCircle, Clock, Paperclip, FileText, X } from 'lucide-react'
 import {
   supabase, ITEM_STATUSES, statusLabel, statusCls,
-  type ItemComment, type ItemActivity,
+  type ItemComment, type ItemActivity, type ItemAttachment,
 } from '../lib/supabase'
 import { useOrg } from '../lib/org'
+import { prepareImage } from '../lib/images'
 import { Modal, BranchBadge, AreaBadge } from '../pages/Faults'
+
+const MAX_FILE_MB = 50
 
 type ItemLike = {
   id: string
@@ -63,17 +66,68 @@ export default function ItemDetail({
   const table = kind === 'fault' ? 'tasks' : 'admin_tasks'
   const [comments, setComments] = useState<ItemComment[]>([])
   const [activity, setActivity] = useState<ItemActivity[]>([])
+  const [attachments, setAttachments] = useState<ItemAttachment[]>([])
   const [newComment, setNewComment] = useState('')
   const [status, setStatus] = useState(item.status)
   const [busy, setBusy] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
+  const fileRef = useRef<HTMLInputElement>(null)
 
   async function load() {
-    const [c, a] = await Promise.all([
+    const [c, a, f] = await Promise.all([
       supabase.from('item_comments').select('*').eq('item_kind', kind).eq('item_id', item.id).order('created_at'),
       supabase.from('item_activity').select('*').eq('item_kind', kind).eq('item_id', item.id).order('created_at', { ascending: false }).limit(40),
+      supabase.from('item_attachments').select('*').eq('item_kind', kind).eq('item_id', item.id).order('created_at'),
     ])
     setComments((c.data as ItemComment[]) ?? [])
     setActivity((a.data as ItemActivity[]) ?? [])
+    setAttachments((f.data as ItemAttachment[]) ?? [])
+  }
+
+  async function uploadFiles(files: FileList | null) {
+    if (!files || files.length === 0) return
+    setUploading(true)
+    setUploadError(null)
+    const { data: userData } = await supabase.auth.getUser()
+    const uid = userData.user?.id ?? null
+    const uname = people.find((p) => p.user_id === uid)?.full_name ?? null
+    for (const raw of Array.from(files)) {
+      let file = raw
+      try {
+        if (raw.type.startsWith('image/') || /\.hei[cf]$/i.test(raw.name)) file = await prepareImage(raw)
+      } catch { /* keep original */ }
+      if (file.size > MAX_FILE_MB * 1024 * 1024) {
+        setUploadError(`"${file.name}" גדול מדי (מקסימום ${MAX_FILE_MB}MB)`)
+        continue
+      }
+      const path = `${kind}/${item.id}/${crypto.randomUUID()}-${file.name}`
+      const { error } = await supabase.storage.from('task-images').upload(path, file)
+      if (error) {
+        setUploadError(`העלאת "${file.name}" נכשלה — נסה שוב`)
+        continue
+      }
+      const url = supabase.storage.from('task-images').getPublicUrl(path).data.publicUrl
+      await supabase.from('item_attachments').insert({
+        item_kind: kind, item_id: item.id, file_name: file.name,
+        mime_type: file.type || null, size_bytes: file.size,
+        url, storage_path: path, uploaded_by: uid, uploaded_by_name: uname,
+      })
+    }
+    setUploading(false)
+    if (fileRef.current) fileRef.current.value = ''
+    load()
+  }
+
+  async function removeAttachment(att: ItemAttachment) {
+    if (!confirm(`להסיר את "${att.file_name}"?`)) return
+    const { error } = await supabase.from('item_attachments').delete().eq('id', att.id)
+    if (error) {
+      setUploadError('אין הרשאה להסיר קובץ של מישהו אחר')
+      return
+    }
+    await supabase.storage.from('task-images').remove([att.storage_path])
+    load()
   }
 
   useEffect(() => {
@@ -157,6 +211,64 @@ export default function ItemDetail({
             <span className="mt-1 block text-[11px] text-slate-400">סגירה סופית של תקלה (עם עלות ואחריות) — דרך "סגור קריאה" בכרטיס</span>
           )}
         </label>
+
+        {/* attachments */}
+        <section>
+          <h4 className="mb-2 flex items-center gap-1.5 text-sm font-bold text-slate-500">
+            <Paperclip size={14} />
+            קבצים ({attachments.length})
+          </h4>
+          {attachments.length > 0 && (
+            <div className="mb-2 flex flex-wrap gap-2">
+              {attachments.map((att) =>
+                att.mime_type?.startsWith('image/') ? (
+                  <div key={att.id} className="group relative">
+                    <a href={att.url} target="_blank" rel="noreferrer">
+                      <img src={att.url} alt={att.file_name} className="h-16 w-16 rounded-lg border border-slate-200 object-cover" />
+                    </a>
+                    <button
+                      onClick={() => removeAttachment(att)}
+                      className="absolute -top-1.5 -end-1.5 hidden rounded-full bg-slate-900 p-0.5 text-white group-hover:block"
+                    >
+                      <X size={11} />
+                    </button>
+                  </div>
+                ) : (
+                  <div key={att.id} className="group relative flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2">
+                    <FileText size={14} className="text-slate-400" />
+                    <a href={att.url} target="_blank" rel="noreferrer" className="max-w-32 truncate text-xs text-slate-700 hover:underline">
+                      {att.file_name}
+                    </a>
+                    <button
+                      onClick={() => removeAttachment(att)}
+                      className="absolute -top-1.5 -end-1.5 hidden rounded-full bg-slate-900 p-0.5 text-white group-hover:block"
+                    >
+                      <X size={11} />
+                    </button>
+                  </div>
+                )
+              )}
+            </div>
+          )}
+          <input
+            ref={fileRef}
+            type="file"
+            multiple
+            accept="image/*,.heic,.heif,video/mp4,video/quicktime,.mov,.pdf,.doc,.docx,.xls,.xlsx,.csv,.txt"
+            hidden
+            onChange={(e) => uploadFiles(e.target.files)}
+          />
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            disabled={uploading}
+            className="flex items-center gap-1.5 rounded-lg border border-dashed border-slate-300 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 disabled:opacity-50"
+          >
+            <Paperclip size={14} />
+            {uploading ? 'מעלה...' : 'צרף קבצים (תמונות, וידאו, מסמכים)'}
+          </button>
+          {uploadError && <p className="mt-1 text-xs text-red-600">{uploadError}</p>}
+        </section>
 
         {/* comments */}
         <section>
