@@ -5,7 +5,11 @@ import { he } from 'date-fns/locale'
 import {
   Plus, Phone, CheckCircle2, Clock, AlertTriangle, ImagePlus, X, History, ShieldCheck, Pencil,
 } from 'lucide-react'
-import { supabase, badgeColorFor, isOpenStatus, statusLabel, statusCls, type Task, type Vendor } from '../lib/supabase'
+import {
+  supabase, badgeColorFor, isOpenStatus, statusLabel, statusCls,
+  SEVERITIES, severityLabel, severityCls, isHighSeverity, IMPACT_FLAGS, flagLabel,
+  type Task, type Vendor,
+} from '../lib/supabase'
 import ItemDetail from '../components/ItemDetail'
 import { prepareImage } from '../lib/images'
 import { useOrg } from '../lib/org'
@@ -197,14 +201,25 @@ function FaultCard({
   const overdue = task.due_date && new Date(task.due_date) < new Date()
   const pr = priorityLabels[task.priority] ?? priorityLabels.medium
 
+  const dangerFlags = (task.impact_flags ?? []).filter((f) => IMPACT_FLAGS.find((x) => x.value === f)?.danger)
+  const critical = task.severity === 'critical'
+
   return (
-    <div className={`rounded-2xl border border-white/10 border-s-4 ${priorityBar[task.priority] ?? priorityBar.medium} bg-slate-900/60 p-4 shadow-sm transition-shadow hover:shadow-md`}>
+    <div className={`rounded-2xl border border-s-4 ${priorityBar[task.priority] ?? priorityBar.medium} bg-slate-900/60 p-4 shadow-sm transition-shadow hover:shadow-md ${
+      critical ? 'border-red-400/40 ring-1 ring-red-500/30' : 'border-white/10'
+    }`}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <h3 onClick={onOpen} className="cursor-pointer font-semibold text-slate-100 hover:underline">{task.title}</h3>
             <BranchBadge name={bizName(task.business_id, task.branch)} />
             <AreaBadge name={areaName(task.area_id)} />
+            {isHighSeverity(task.severity) && (
+              <span className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold ${severityCls(task.severity)}`}>
+                {critical && <AlertTriangle size={12} />}
+                {severityLabel(task.severity)}
+              </span>
+            )}
             {task.status !== 'open' && (
               <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusCls(task.status)}`}>{statusLabel(task.status)}</span>
             )}
@@ -216,6 +231,15 @@ function FaultCard({
               </span>
             )}
           </div>
+          {dangerFlags.length > 0 && (
+            <div className="mt-1.5 flex flex-wrap gap-1">
+              {dangerFlags.map((f) => (
+                <span key={f} className="rounded-full bg-red-500/15 px-2 py-0.5 text-[11px] font-medium text-red-300">
+                  ⚠ {flagLabel(f)}
+                </span>
+              ))}
+            </div>
+          )}
           {task.description && <p className="mt-1 text-sm text-slate-400">{task.description}</p>}
           <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">
             {task.due_date && (
@@ -286,6 +310,8 @@ function ReportDialog({
   const [bizId, setBizId] = useState(task?.business_id ?? defaultBiz)
   const [areaId, setAreaId] = useState(task?.area_id ?? '')
   const [priority, setPriority] = useState<string>(task?.priority ?? 'medium')
+  const [severity, setSeverity] = useState<string>(task?.severity ?? 'medium')
+  const [flags, setFlags] = useState<string[]>(task?.impact_flags ?? [])
   const [dueDate, setDueDate] = useState(task?.due_date ? task.due_date.slice(0, 10) : '')
   const [vendorId, setVendorId] = useState(task?.vendor_id ?? '')
   const [assigneeId, setAssigneeId] = useState<string>(
@@ -329,6 +355,9 @@ function ReportDialog({
       vendor_id: vendorId || null,
       ...resolveAssignee(assigneeId, people, task),
       priority,
+      severity,
+      impact_flags: flags,
+      requires_after_photo: isHighSeverity(severity),
       issue_image_url: imageUrl,
     }
     if (task) {
@@ -360,13 +389,47 @@ function ReportDialog({
         />
         <div className="grid grid-cols-2 gap-3">
           <label className="block text-sm">
-            <span className="mb-1 block text-slate-400">דחיפות</span>
+            <span className="mb-1 block text-slate-400">דחיפות (סדר טיפול)</span>
             <select value={priority} onChange={(e) => setPriority(e.target.value)} className={inputCls}>
               <option value="high">דחוף</option>
               <option value="medium">רגיל</option>
               <option value="low">נמוך</option>
             </select>
           </label>
+          <label className="block text-sm">
+            <span className="mb-1 block text-slate-400">חומרה (השפעה)</span>
+            <select value={severity} onChange={(e) => setSeverity(e.target.value)} className={inputCls}>
+              {SEVERITIES.map((s) => (
+                <option key={s.value} value={s.value}>{s.label}</option>
+              ))}
+            </select>
+          </label>
+        </div>
+        <div>
+          <span className="mb-1.5 block text-sm text-slate-400">דגלי השפעה ובטיחות</span>
+          <div className="flex flex-wrap gap-1.5">
+            {IMPACT_FLAGS.map((f) => {
+              const on = flags.includes(f.value)
+              return (
+                <button
+                  key={f.value}
+                  type="button"
+                  onClick={() => setFlags((cur) => (on ? cur.filter((x) => x !== f.value) : [...cur, f.value]))}
+                  className={`rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
+                    on
+                      ? f.danger
+                        ? 'border-red-400/40 bg-red-500/20 text-red-300'
+                        : 'border-orange-400/40 bg-orange-500/20 text-orange-300'
+                      : 'border-white/10 bg-white/5 text-slate-400 hover:bg-white/10'
+                  }`}
+                >
+                  {f.danger && on ? '⚠ ' : ''}{f.label}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+        <div className="grid grid-cols-1 gap-3">
           <label className="block text-sm">
             <span className="mb-1 block text-slate-400">דד-ליין לתיקון</span>
             <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} className={inputCls} />

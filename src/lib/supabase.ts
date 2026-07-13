@@ -72,6 +72,33 @@ export const statusLabel = (s: string) => ITEM_STATUSES.find((x) => x.value === 
 export const statusCls = (s: string) => ITEM_STATUSES.find((x) => x.value === s)?.cls ?? 'bg-white/10 text-slate-400'
 export const isOpenStatus = (s: string) => s !== 'done' && s !== 'cancelled'
 
+// Severity — impact on business/safety, separate from priority (order of handling)
+export const SEVERITIES = [
+  { value: 'low', label: 'קלה', cls: 'bg-white/10 text-slate-400' },
+  { value: 'medium', label: 'בינונית', cls: 'bg-sky-500/15 text-sky-300' },
+  { value: 'high', label: 'חמורה', cls: 'bg-amber-500/15 text-amber-300' },
+  { value: 'critical', label: 'קריטית', cls: 'bg-red-500/20 text-red-300' },
+] as const
+export const severityLabel = (s: string) => SEVERITIES.find((x) => x.value === s)?.label ?? s
+export const severityCls = (s: string) => SEVERITIES.find((x) => x.value === s)?.cls ?? 'bg-white/10 text-slate-400'
+export const isHighSeverity = (s: string) => s === 'high' || s === 'critical'
+
+// Impact / safety flags — fixed vocabulary, stored as text[] (filterable/reportable)
+export const IMPACT_FLAGS = [
+  { value: 'full_shutdown', label: 'משביתה פעילות מלאה', danger: true },
+  { value: 'area_shutdown', label: 'משביתה אזור', danger: true },
+  { value: 'staff_danger', label: 'סכנה לעובדים', danger: true },
+  { value: 'customer_danger', label: 'סכנה ללקוחות', danger: true },
+  { value: 'food_safety', label: 'סיכון בטיחות מזון', danger: true },
+  { value: 'equipment_damage', label: 'נזק לציוד/מבנה', danger: false },
+  { value: 'service_impact', label: 'פגיעה בשירות', danger: false },
+  { value: 'area_closure_required', label: 'דורשת סגירת אזור', danger: true },
+  { value: 'notify_owner', label: 'דיווח לבעלים', danger: false },
+  { value: 'needs_external_tech', label: 'דורשת טכנאי חיצוני', danger: false },
+] as const
+export const flagLabel = (v: string) => IMPACT_FLAGS.find((f) => f.value === v)?.label ?? v
+export const flagIsDanger = (v: string) => IMPACT_FLAGS.find((f) => f.value === v)?.danger ?? false
+
 export type ItemComment = {
   id: string
   item_kind: 'fault' | 'task'
@@ -110,6 +137,24 @@ export type Task = {
   branch: string
   business_id: string | null
   area_id: string | null
+  severity: string
+  impact_flags: string[]
+  first_seen_at: string | null
+  acknowledged_at: string | null
+  acknowledged_by: string | null
+  ack_declined_reason: string | null
+  started_at: string | null
+  restored_at: string | null
+  area_closed: boolean
+  root_cause: string | null
+  follow_up_required: boolean
+  recurrence_expected: boolean
+  procedure_update_needed: boolean
+  requires_after_photo: boolean
+  safety_close_approved_by: string | null
+  safety_close_approved_at: string | null
+  escalation_level: number
+  sla_policy_id: string | null
   resolution_notes: string | null
   warranty_until: string | null
   deleted_at: string | null
