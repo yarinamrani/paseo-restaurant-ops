@@ -61,7 +61,7 @@ export default function NotificationsBell() {
     }
     setOpen(false)
     load()
-    if (n.item_kind === 'fault') navigate('/')
+    if (n.item_kind === 'fault') navigate('/faults')
     else if (n.item_kind === 'task') navigate('/tasks')
   }
 

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { format } from 'date-fns'
 import { he } from 'date-fns/locale'
 import {
@@ -50,6 +51,14 @@ export default function FaultsPage() {
   useEffect(() => {
     load()
   }, [])
+
+  const [params, setParams] = useSearchParams()
+  useEffect(() => {
+    if (params.get('new') === '1') {
+      setReportOpen(true)
+      setParams({}, { replace: true })
+    }
+  }, [params, setParams])
 
   const filtered = branchFilter === 'הכל' ? tasks : tasks.filter((t) => t.business_id === branchFilter)
   const open = filtered.filter((t) => isOpenStatus(t.status))
@@ -607,7 +616,7 @@ export function Modal({ title, onClose, children }: { title: string; onClose: ()
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm" onClick={onClose}>
       <div
-        className="max-h-[88vh] w-full max-w-md overflow-y-auto rounded-3xl bg-slate-900/60 p-5 shadow-2xl"
+        className="animate-pop-in max-h-[88vh] w-full max-w-md overflow-y-auto rounded-3xl border border-white/10 bg-slate-900 p-5 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4 flex items-center justify-between">

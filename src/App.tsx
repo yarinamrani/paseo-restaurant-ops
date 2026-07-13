@@ -6,6 +6,8 @@ import { supabase } from './lib/supabase'
 import AuthPage from './pages/Auth'
 import Layout from './components/Layout'
 import FaultsPage from './pages/Faults'
+import HomePage from './pages/Home'
+import MorePage from './pages/More'
 import TasksPage from './pages/Tasks'
 import VendorsPage from './pages/Vendors'
 import TeamPage from './pages/Team'
@@ -70,9 +72,11 @@ export default function App() {
     <OrgProvider>
       <Routes>
         <Route element={<Layout isAdmin={isAdmin} />}>
-          <Route path="/" element={<FaultsPage />} />
+          <Route path="/" element={<HomePage />} />
+          <Route path="/faults" element={<FaultsPage />} />
           <Route path="/tasks" element={<TasksPage />} />
           <Route path="/vendors" element={<VendorsPage />} />
+          <Route path="/more" element={<MorePage isAdmin={isAdmin} />} />
           {isAdmin && <Route path="/team" element={<TeamPage />} />}
           {isAdmin && <Route path="/stats" element={<StatsPage />} />}
           {isAdmin && <Route path="/settings" element={<SettingsPage />} />}

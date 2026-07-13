@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { format } from 'date-fns'
 import { he } from 'date-fns/locale'
 import { Plus, CheckCircle2, Circle, Clock, Pencil, Repeat, Trash2, Pause, Play, ImagePlus, List, SquareKanban, CalendarDays } from 'lucide-react'
@@ -48,6 +49,14 @@ export default function TasksPage() {
   useEffect(() => {
     load()
   }, [])
+
+  const [params, setParams] = useSearchParams()
+  useEffect(() => {
+    if (params.get('new') === '1') {
+      setAddOpen(true)
+      setParams({}, { replace: true })
+    }
+  }, [params, setParams])
 
   async function toggle(t: AdminTask) {
     const done = t.status === 'done'

@@ -29,3 +29,28 @@ body {
   unicode-bidi: isolate;
   display: inline-block;
 }
+
+/* Native-app motion */
+@keyframes page-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+.animate-page-in { animation: page-in 0.3s cubic-bezier(0.2, 0.8, 0.3, 1); }
+
+@keyframes sheet-up {
+  from { transform: translateY(100%); }
+  to { transform: none; }
+}
+.animate-sheet-up { animation: sheet-up 0.32s cubic-bezier(0.2, 0.8, 0.3, 1); }
+
+@keyframes pop-in {
+  from { opacity: 0; transform: scale(0.96) translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+.animate-pop-in { animation: pop-in 0.22s cubic-bezier(0.2, 0.8, 0.3, 1); }
+
+@keyframes fab-glow {
+  0%, 100% { box-shadow: 0 8px 24px rgba(52, 211, 153, 0.35); }
+  50% { box-shadow: 0 8px 32px rgba(52, 211, 153, 0.55); }
+}
+.animate-fab-glow { animation: fab-glow 2.6s ease-in-out infinite; }
