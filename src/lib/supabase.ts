@@ -65,6 +65,7 @@ export type Task = {
   due_date: string | null
   vendor_id: string | null
   assignee_name: string | null
+  assignee_user_id: string | null
   priority: 'low' | 'medium' | 'high'
   issue_image_url: string | null
   cost: number | null
@@ -86,6 +87,7 @@ export type RecurringTask = {
   branch: string
   business_id: string | null
   assignee_name: string | null
+  assignee_user_id: string | null
   priority: string
   interval_days: number
   next_due: string
@@ -98,6 +100,7 @@ export type AdminTask = {
   title: string
   description: string | null
   assignee_name: string | null
+  assignee_user_id: string | null
   deadline: string | null
   priority: 'low' | 'medium' | 'high'
   status: 'open' | 'done'

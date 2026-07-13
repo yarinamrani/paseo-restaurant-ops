@@ -4,7 +4,7 @@ import { he } from 'date-fns/locale'
 import { Plus, CheckCircle2, Circle, Clock, Pencil, Repeat, Trash2, Pause, Play, ImagePlus } from 'lucide-react'
 import { supabase, type AdminTask, type RecurringTask } from '../lib/supabase'
 import { prepareImage } from '../lib/images'
-import { Modal, DialogButtons, inputCls, BranchBadge, AreaBadge, BranchFilter, BranchSelect, AreaSelect } from './Faults'
+import { Modal, DialogButtons, inputCls, BranchBadge, AreaBadge, BranchFilter, BranchSelect, AreaSelect, AssigneeSelect, resolveAssignee } from './Faults'
 import { useOrg } from '../lib/org'
 
 export default function TasksPage() {
@@ -15,6 +15,11 @@ export default function TasksPage() {
   const [addOpen, setAddOpen] = useState(false)
   const [editing, setEditing] = useState<AdminTask | null>(null)
   const [recurringOpen, setRecurringOpen] = useState(false)
+  const [myId, setMyId] = useState<string | null>(null)
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setMyId(data.user?.id ?? null))
+  }, [])
 
   async function load() {
     const { data } = await supabase.from('admin_tasks').select('*').order('deadline', { ascending: true })
@@ -40,7 +45,11 @@ export default function TasksPage() {
   const assignees = [...new Set(tasks.map((t) => t.assignee_name?.trim()).filter(Boolean))] as string[]
   const byBranch = branchFilter === 'הכל' ? tasks : tasks.filter((t) => t.business_id === branchFilter)
   const filtered =
-    assigneeFilter === 'כולם' ? byBranch : byBranch.filter((t) => t.assignee_name?.trim() === assigneeFilter)
+    assigneeFilter === 'כולם'
+      ? byBranch
+      : assigneeFilter === '__mine'
+        ? byBranch.filter((t) => t.assignee_user_id === myId)
+        : byBranch.filter((t) => t.assignee_name?.trim() === assigneeFilter)
   const open = filtered.filter((t) => t.status === 'open')
   const done = filtered.filter((t) => t.status === 'done')
 
@@ -72,20 +81,24 @@ export default function TasksPage() {
 
       <BranchFilter value={branchFilter} onChange={setBranchFilter} counts={tasks.filter((t) => t.status === 'open')} />
 
-      {assignees.length > 0 && (
+      {(assignees.length > 0 || myId) && (
         <div className="flex flex-wrap items-center gap-1.5">
           <span className="text-xs text-slate-400">באחריות:</span>
-          {['כולם', ...assignees].map((a) => (
+          {[
+            { key: 'כולם', label: 'כולם' },
+            ...(myId ? [{ key: '__mine', label: 'שלי 👤' }] : []),
+            ...assignees.map((a) => ({ key: a, label: a })),
+          ].map(({ key, label }) => (
             <button
-              key={a}
-              onClick={() => setAssigneeFilter(a)}
+              key={key}
+              onClick={() => setAssigneeFilter(key)}
               className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-                assigneeFilter === a
+                assigneeFilter === key
                   ? 'bg-emerald-600 text-white'
                   : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
               }`}
             >
-              {a}
+              {label}
             </button>
           ))}
         </div>
@@ -169,13 +182,15 @@ export default function TasksPage() {
 function TaskDialog({
   task, onClose, onSaved,
 }: { task: AdminTask | null; onClose: () => void; onSaved: () => void }) {
-  const { businesses, bizName } = useOrg()
+  const { businesses, bizName, people } = useOrg()
   const defaultBiz = businesses.find((b) => b.name === 'פסאו')?.id ?? businesses.find((b) => b.active)?.id ?? ''
   const [title, setTitle] = useState(task?.title ?? '')
   const [description, setDescription] = useState(task?.description ?? '')
   const [bizId, setBizId] = useState(task?.business_id ?? defaultBiz)
   const [areaId, setAreaId] = useState(task?.area_id ?? '')
-  const [assignee, setAssignee] = useState(task?.assignee_name ?? '')
+  const [assigneeId, setAssigneeId] = useState<string>(
+    task?.assignee_user_id ?? (task?.assignee_name ? '__legacy' : '')
+  )
   const [deadline, setDeadline] = useState(task?.deadline ? task.deadline.slice(0, 10) : '')
   const [priority, setPriority] = useState<string>(task?.priority ?? 'medium')
   const [file, setFile] = useState<File | null>(null)
@@ -212,7 +227,7 @@ function TaskDialog({
       branch: bizName(bizId, 'פסאו'),
       business_id: bizId || null,
       area_id: areaId || null,
-      assignee_name: assignee.trim() || null,
+      ...resolveAssignee(assigneeId, people, task),
       deadline: deadline ? new Date(deadline).toISOString() : null,
       priority,
       image_url: imageUrl,
@@ -240,10 +255,7 @@ function TaskDialog({
         <AreaSelect businessId={bizId} value={areaId} onChange={setAreaId} />
         <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="הוסף פרטים נוספים..." rows={2} className={inputCls} />
         <div className="grid grid-cols-2 gap-3">
-          <label className="block text-sm">
-            <span className="mb-1 block text-slate-600">באחריות</span>
-            <input value={assignee} onChange={(e) => setAssignee(e.target.value)} className={inputCls} />
-          </label>
+          <AssigneeSelect value={assigneeId} legacyName={task?.assignee_name} onChange={setAssigneeId} />
           <label className="block text-sm">
             <span className="mb-1 block text-slate-600">דד-ליין</span>
             <input type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} className={inputCls} />
@@ -293,13 +305,13 @@ const freqLabel = (days: number) =>
   FREQUENCIES.find((f) => f.days === days)?.label ?? `כל ${days} ימים`
 
 function RecurringModal({ onClose }: { onClose: () => void }) {
-  const { businesses, bizName } = useOrg()
+  const { businesses, bizName, people } = useOrg()
   const defaultBiz = businesses.find((b) => b.name === 'פסאו')?.id ?? businesses.find((b) => b.active)?.id ?? ''
   const [items, setItems] = useState<RecurringTask[]>([])
   const [adding, setAdding] = useState(false)
   const [title, setTitle] = useState('')
   const [bizId, setBizId] = useState(defaultBiz)
-  const [assignee, setAssignee] = useState('')
+  const [assigneeId, setAssigneeId] = useState('')
   const [intervalDays, setIntervalDays] = useState(30)
   const [firstDue, setFirstDue] = useState('')
   const [busy, setBusy] = useState(false)
@@ -320,14 +332,14 @@ function RecurringModal({ onClose }: { onClose: () => void }) {
       title: title.trim(),
       branch: bizName(bizId, 'פסאו'),
       business_id: bizId || null,
-      assignee_name: assignee.trim() || null,
+      ...resolveAssignee(assigneeId, people, null),
       interval_days: intervalDays,
       next_due: firstDue,
     })
     setBusy(false)
     setAdding(false)
     setTitle('')
-    setAssignee('')
+    setAssigneeId('')
     setFirstDue('')
     load()
   }
@@ -400,10 +412,7 @@ function RecurringModal({ onClose }: { onClose: () => void }) {
               <input type="date" required value={firstDue} onChange={(e) => setFirstDue(e.target.value)} className={inputCls} />
             </label>
           </div>
-          <label className="block text-sm">
-            <span className="mb-1 block text-slate-600">באחריות (רשות)</span>
-            <input value={assignee} onChange={(e) => setAssignee(e.target.value)} className={inputCls} />
-          </label>
+          <AssigneeSelect value={assigneeId} onChange={setAssigneeId} />
           <DialogButtons busy={busy} onCancel={() => setAdding(false)} submitLabel="הוסף" />
         </form>
       ) : (

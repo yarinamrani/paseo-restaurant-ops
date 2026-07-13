@@ -1,9 +1,12 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react'
 import { supabase, type Area, type Business } from './supabase'
 
+export type Person = { user_id: string; full_name: string | null }
+
 type OrgContextValue = {
   businesses: Business[]
   areas: Area[]
+  people: Person[]
   loaded: boolean
   reload: () => void
   bizName: (id: string | null, fallback?: string) => string
@@ -13,6 +16,7 @@ type OrgContextValue = {
 const OrgContext = createContext<OrgContextValue>({
   businesses: [],
   areas: [],
+  people: [],
   loaded: false,
   reload: () => {},
   bizName: () => '',
@@ -22,15 +26,18 @@ const OrgContext = createContext<OrgContextValue>({
 export function OrgProvider({ children }: { children: React.ReactNode }) {
   const [businesses, setBusinesses] = useState<Business[]>([])
   const [areas, setAreas] = useState<Area[]>([])
+  const [people, setPeople] = useState<Person[]>([])
   const [loaded, setLoaded] = useState(false)
 
   const reload = useCallback(() => {
     Promise.all([
       supabase.from('businesses').select('*').order('sort_order'),
       supabase.from('areas').select('*').order('sort_order'),
-    ]).then(([b, a]) => {
+      supabase.from('profiles').select('user_id, full_name').order('full_name'),
+    ]).then(([b, a, p]) => {
       setBusinesses((b.data as Business[]) ?? [])
       setAreas((a.data as Area[]) ?? [])
+      setPeople((p.data as Person[]) ?? [])
       setLoaded(true)
     })
   }, [])
@@ -49,7 +56,7 @@ export function OrgProvider({ children }: { children: React.ReactNode }) {
   )
 
   return (
-    <OrgContext.Provider value={{ businesses, areas, loaded, reload, bizName, areaName }}>
+    <OrgContext.Provider value={{ businesses, areas, people, loaded, reload, bizName, areaName }}>
       {children}
     </OrgContext.Provider>
   )

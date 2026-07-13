@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { UserCheck, ShieldCheck, UserMinus, Clock } from 'lucide-react'
 import { supabase } from '../lib/supabase'
+import { useOrg } from '../lib/org'
 
 type Member = {
   user_id: string
@@ -16,7 +17,10 @@ const roleLabels: Record<string, { label: string; cls: string }> = {
 }
 
 export default function TeamPage() {
+  const { businesses } = useOrg()
+  const activeBiz = businesses.filter((b) => b.active)
   const [members, setMembers] = useState<Member[]>([])
+  const [memberships, setMemberships] = useState<{ user_id: string; business_id: string }[]>([])
   const [me, setMe] = useState<string | null>(null)
   const [toast, setToast] = useState<string | null>(null)
 
@@ -26,11 +30,13 @@ export default function TeamPage() {
   }
 
   async function load() {
-    const [{ data: profiles }, { data: roles }, { data: userData }] = await Promise.all([
+    const [{ data: profiles }, { data: roles }, { data: userData }, { data: mships }] = await Promise.all([
       supabase.from('profiles').select('user_id, full_name, email'),
       supabase.from('user_roles').select('user_id, role'),
       supabase.auth.getUser(),
+      supabase.from('business_memberships').select('user_id, business_id'),
     ])
+    setMemberships((mships as { user_id: string; business_id: string }[]) ?? [])
     setMe(userData.user?.id ?? null)
     const roleMap = new Map((roles ?? []).map((r) => [r.user_id, r.role]))
     setMembers(
@@ -51,7 +57,23 @@ export default function TeamPage() {
       notify('אין לך הרשאה לבצע פעולה זו')
       return
     }
+    // approving a pending user grants access to all active businesses (adjustable below)
+    if (m.role === 'pending' && role === 'staff' && activeBiz.length > 0) {
+      await supabase.from('business_memberships').upsert(
+        activeBiz.map((b) => ({ user_id: m.user_id, business_id: b.id, role: 'employee' })),
+        { onConflict: 'user_id,business_id', ignoreDuplicates: true }
+      )
+    }
     notify(msg)
+    load()
+  }
+
+  async function toggleBiz(m: Member, businessId: string, has: boolean) {
+    if (has) {
+      await supabase.from('business_memberships').delete().eq('user_id', m.user_id).eq('business_id', businessId)
+    } else {
+      await supabase.from('business_memberships').insert({ user_id: m.user_id, business_id: businessId, role: 'employee' })
+    }
     load()
   }
 
@@ -108,6 +130,30 @@ export default function TeamPage() {
                     {isSelf && <span className="text-xs text-slate-400">(אתה)</span>}
                   </div>
                   <p className="truncate text-sm text-slate-500" dir="ltr">{m.email}</p>
+                  {m.role === 'admin' ? (
+                    <p className="mt-1.5 text-xs text-emerald-700">גישה לכל העסקים (מנהל מערכת)</p>
+                  ) : (
+                    <div className="mt-1.5 flex flex-wrap items-center gap-1">
+                      <span className="text-[11px] text-slate-400">עסקים:</span>
+                      {activeBiz.map((b) => {
+                        const has = memberships.some((x) => x.user_id === m.user_id && x.business_id === b.id)
+                        return (
+                          <button
+                            key={b.id}
+                            onClick={() => toggleBiz(m, b.id, has)}
+                            title={has ? 'הסר גישה' : 'תן גישה'}
+                            className={`rounded-full px-2 py-0.5 text-[11px] font-medium transition-colors ${
+                              has
+                                ? 'bg-emerald-100 text-emerald-700'
+                                : 'border border-dashed border-slate-300 text-slate-400 hover:bg-slate-50'
+                            }`}
+                          >
+                            {b.name}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  )}
                 </div>
                 {!isSelf && (
                   <div className="flex shrink-0 gap-1.5">

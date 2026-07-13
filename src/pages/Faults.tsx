@@ -243,7 +243,7 @@ function FaultCard({
 function ReportDialog({
   task, vendors, onClose, onSaved,
 }: { task: Task | null; vendors: Vendor[]; onClose: () => void; onSaved: () => void }) {
-  const { businesses, bizName } = useOrg()
+  const { businesses, bizName, people } = useOrg()
   const defaultBiz = businesses.find((b) => b.name === 'פסאו')?.id ?? businesses.find((b) => b.active)?.id ?? ''
   const [title, setTitle] = useState(task?.title ?? '')
   const [description, setDescription] = useState(task?.description ?? '')
@@ -252,7 +252,9 @@ function ReportDialog({
   const [priority, setPriority] = useState<string>(task?.priority ?? 'medium')
   const [dueDate, setDueDate] = useState(task?.due_date ? task.due_date.slice(0, 10) : '')
   const [vendorId, setVendorId] = useState(task?.vendor_id ?? '')
-  const [assignee, setAssignee] = useState(task?.assignee_name ?? '')
+  const [assigneeId, setAssigneeId] = useState<string>(
+    task?.assignee_user_id ?? (task?.assignee_name ? '__legacy' : '')
+  )
   const [file, setFile] = useState<File | null>(null)
   const [processing, setProcessing] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -289,7 +291,7 @@ function ReportDialog({
       area_id: areaId || null,
       due_date: dueDate ? new Date(dueDate).toISOString() : null,
       vendor_id: vendorId || null,
-      assignee_name: assignee.trim() || null,
+      ...resolveAssignee(assigneeId, people, task),
       priority,
       issue_image_url: imageUrl,
     }
@@ -347,10 +349,7 @@ function ReportDialog({
               ))}
             </select>
           </label>
-          <label className="block text-sm">
-            <span className="mb-1 block text-slate-600">אחראי על ביצוע</span>
-            <input value={assignee} onChange={(e) => setAssignee(e.target.value)} className={inputCls} />
-          </label>
+          <AssigneeSelect value={assigneeId} legacyName={task?.assignee_name} onChange={setAssigneeId} />
         </div>
         <div className="flex items-center gap-3">
           <input ref={fileRef} type="file" accept="image/*,.heic,.heif" hidden onChange={(e) => pickFile(e.target.files?.[0] ?? null)} />
@@ -524,6 +523,39 @@ export function BranchSelect({ value, onChange }: { value: string; onChange: (id
       </div>
     </label>
   )
+}
+
+// value: '' (none) | user_id | '__legacy' (keep the original free-text name)
+export function AssigneeSelect({
+  value, legacyName, onChange,
+}: { value: string; legacyName?: string | null; onChange: (v: string) => void }) {
+  const { people } = useOrg()
+  return (
+    <label className="block text-sm">
+      <span className="mb-1 block text-slate-600">אחראי ראשי</span>
+      <select value={value} onChange={(e) => onChange(e.target.value)} className={inputCls}>
+        <option value="">ללא אחראי</option>
+        {legacyName && !people.some((p) => p.full_name === legacyName) && (
+          <option value="__legacy">{legacyName}</option>
+        )}
+        {people.map((p) => (
+          <option key={p.user_id} value={p.user_id}>{p.full_name ?? '—'}</option>
+        ))}
+      </select>
+    </label>
+  )
+}
+
+export function resolveAssignee(
+  value: string,
+  people: { user_id: string; full_name: string | null }[],
+  legacy?: { assignee_user_id: string | null; assignee_name: string | null } | null
+) {
+  if (value === '__legacy') {
+    return { assignee_user_id: legacy?.assignee_user_id ?? null, assignee_name: legacy?.assignee_name ?? null }
+  }
+  if (!value) return { assignee_user_id: null, assignee_name: null }
+  return { assignee_user_id: value, assignee_name: people.find((p) => p.user_id === value)?.full_name ?? null }
 }
 
 export function AreaSelect({
