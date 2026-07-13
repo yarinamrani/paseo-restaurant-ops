@@ -56,3 +56,11 @@
 - SPA (Vite+React+TS) על GitHub Pages + Supabase (Auth/DB/Storage/RLS) — נשאר; אין צורך ב-Next עד שנצטרך SSR
 - שינויי DB רק דרך migrations (supabase); אין service_role בצד לקוח
 - `branch` (טקסט) = עמודת legacy בלבד; מקור האמת הוא business_id
+
+## מנגנון אירועים / בטיחות / SLA (החל 2026-07-14)
+### ✅ שלב 1 — תשתית נתונים (הושלם, additive, אומת)
+- `tasks`: severity (low/medium/high/critical, נפרד מ-priority) + impact_flags text[] (10 דגלים, מאולצים ע"י CHECK, ניתנים לסינון) + חותמות מחזור-חיים (first_seen/acknowledged/started/restored + acknowledged_by + ack_declined_reason) + שדות סגירה (root_cause, follow_up_required, recurrence_expected, procedure_update_needed, requires_after_photo, safety_close_approved_by/at, area_closed) + escalation_level/muted_until + sla_policy_id
+- טבלאות חדשות: `sla_policies` (מנוהל אדמין, 4 ברירות-מחדל גלובליות לפי severity — ללא קידוד קשיח), `escalation_events`, `notification_subscriptions` (ריבוי מכשירים), `notification_preferences`
+- RLS מלא על כל 4 הטבלאות (SLA/escalation דרך has_business_access; subs/prefs = own only)
+- Audit הורחב: severity/impact_flags/area_closed/ack/started/restored/root_cause/escalation_level נרשמים ביומן החסין. אומת חי + CHECK דגלים חוסם ערך לא חוקי. Build עובר.
+### 🔜 שלבים 2-6: UI (severity+דגלים+ack+באנר קריטי+סגירה) → מנוע הסלמה (cron+escalation_events) → Web Push → וואטסאפ (זיהוי severity) → אכיפת הרשאות (עובד לא מוריד critical, סגירת אירוע בטיחותי מורשית)
