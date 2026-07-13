@@ -8,7 +8,7 @@ import { Modal, DialogButtons, inputCls, BranchBadge, AreaBadge, BranchFilter, B
 import { useOrg } from '../lib/org'
 
 export default function TasksPage() {
-  const { bizName, areaName } = useOrg()
+  const { bizName, areaName, people } = useOrg()
   const [tasks, setTasks] = useState<AdminTask[]>([])
   const [branchFilter, setBranchFilter] = useState<string>('הכל')
   const [assigneeFilter, setAssigneeFilter] = useState<string>('כולם')
@@ -42,13 +42,21 @@ export default function TasksPage() {
     load()
   }
 
-  const assignees = [...new Set(tasks.map((t) => t.assignee_name?.trim()).filter(Boolean))] as string[]
+  // names that mean "me" — full name and first name — are covered by the "שלי" chip
+  const myFullName = people.find((p) => p.user_id === myId)?.full_name?.trim() ?? ''
+  const myNames = new Set([myFullName, myFullName.split(' ')[0]].filter(Boolean))
+  const isMine = (t: AdminTask) =>
+    (myId && t.assignee_user_id === myId) || (!!t.assignee_name && myNames.has(t.assignee_name.trim()))
+
+  const assignees = [
+    ...new Set(tasks.map((t) => t.assignee_name?.trim()).filter((n): n is string => !!n && !myNames.has(n))),
+  ]
   const byBranch = branchFilter === 'הכל' ? tasks : tasks.filter((t) => t.business_id === branchFilter)
   const filtered =
     assigneeFilter === 'כולם'
       ? byBranch
       : assigneeFilter === '__mine'
-        ? byBranch.filter((t) => t.assignee_user_id === myId)
+        ? byBranch.filter(isMine)
         : byBranch.filter((t) => t.assignee_name?.trim() === assigneeFilter)
   const open = filtered.filter((t) => t.status === 'open')
   const done = filtered.filter((t) => t.status === 'done')
