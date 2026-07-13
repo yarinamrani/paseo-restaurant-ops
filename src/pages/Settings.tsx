@@ -17,7 +17,7 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold text-slate-900">הגדרות</h2>
+        <h2 className="text-xl font-bold text-slate-100">הגדרות</h2>
         <p className="text-sm text-slate-500">ניהול עסקים ואזורים — זמין למנהלי מערכת בלבד</p>
       </div>
 
@@ -46,7 +46,7 @@ export default function SettingsPage() {
       <RecycleBin onChanged={notify} />
 
       {toast && (
-        <div className="fixed bottom-6 start-1/2 z-50 -translate-x-1/2 rtl:translate-x-1/2 rounded-full bg-slate-900 px-5 py-2.5 text-sm text-white shadow-lg">
+        <div className="fixed bottom-6 start-1/2 z-50 -translate-x-1/2 rtl:translate-x-1/2 rounded-full border border-white/10 bg-slate-800 px-5 py-2.5 text-sm text-white shadow-xl">
           {toast}
         </div>
       )}
@@ -99,8 +99,8 @@ function RecycleBin({ onChanged }: { onChanged: (msg: string) => void }) {
   }
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-4">
-      <h3 className="mb-1 flex items-center gap-1.5 text-sm font-bold text-slate-600">
+    <section className="rounded-2xl border border-white/10 bg-slate-900/60 p-4">
+      <h3 className="mb-1 flex items-center gap-1.5 text-sm font-bold text-slate-400">
         <Trash2 size={15} />
         סל מחזור ({items.length})
       </h3>
@@ -110,21 +110,21 @@ function RecycleBin({ onChanged }: { onChanged: (msg: string) => void }) {
       ) : (
         <div className="space-y-1.5">
           {items.map((item) => (
-            <div key={item.kind + item.id} className="flex items-center justify-between gap-2 rounded-xl border border-slate-100 px-3 py-2">
+            <div key={item.kind + item.id} className="flex items-center justify-between gap-2 rounded-xl border border-white/5 px-3 py-2">
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-1.5">
-                  <span className="text-sm font-medium text-slate-700">{item.title}</span>
+                  <span className="text-sm font-medium text-slate-300">{item.title}</span>
                   <BranchBadge name={bizName(item.business_id, item.branch)} />
                   <span className="text-[11px] text-slate-400">{item.kind === 'fault' ? 'תקלה' : 'משימה'}</span>
                 </div>
                 <p className="text-[11px] text-slate-400">נמחק {format(new Date(item.deleted_at), 'd.M.yyyy HH:mm')}</p>
               </div>
               <div className="flex shrink-0 gap-1">
-                <button onClick={() => restore(item)} title="שחזר" className="flex items-center gap-1 rounded-lg border border-emerald-200 px-2.5 py-1.5 text-xs text-emerald-700 hover:bg-emerald-50">
+                <button onClick={() => restore(item)} title="שחזר" className="flex items-center gap-1 rounded-lg border border-emerald-400/30 px-2.5 py-1.5 text-xs text-emerald-300 hover:bg-emerald-500/10">
                   <RotateCcw size={13} />
                   שחזר
                 </button>
-                <button onClick={() => purge(item)} title="מחק לצמיתות" className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600">
+                <button onClick={() => purge(item)} title="מחק לצמיתות" className="rounded-lg p-1.5 text-slate-400 hover:bg-red-500/10 hover:text-red-400">
                   <XCircle size={15} />
                 </button>
               </div>
@@ -193,8 +193,8 @@ function ManagedList({
   }
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-4">
-      <h3 className="mb-1 flex items-center gap-1.5 text-sm font-bold text-slate-600">
+    <section className="rounded-2xl border border-white/10 bg-slate-900/60 p-4">
+      <h3 className="mb-1 flex items-center gap-1.5 text-sm font-bold text-slate-400">
         {icon}
         {title}
       </h3>
@@ -204,7 +204,7 @@ function ManagedList({
         {items.map((item) => (
           <div
             key={item.id}
-            className={`flex items-center justify-between gap-2 rounded-xl border border-slate-100 px-3 py-2 ${item.active ? '' : 'opacity-50'}`}
+            className={`flex items-center justify-between gap-2 rounded-xl border border-white/5 px-3 py-2 ${item.active ? '' : 'opacity-50'}`}
           >
             {editingId === item.id ? (
               <input
@@ -215,21 +215,21 @@ function ManagedList({
                 className={inputCls}
               />
             ) : (
-              <span className="text-sm font-medium text-slate-800">
+              <span className="text-sm font-medium text-slate-200">
                 {item.name}
                 {!item.active && <span className="ms-2 text-xs text-slate-400">(מוסתר)</span>}
               </span>
             )}
             <div className="flex shrink-0 gap-1">
               {editingId === item.id ? (
-                <button onClick={() => rename(item)} title="שמור" className="rounded-lg p-1.5 text-emerald-600 hover:bg-emerald-50">
+                <button onClick={() => rename(item)} title="שמור" className="rounded-lg p-1.5 text-emerald-400 hover:bg-emerald-500/10">
                   <Check size={15} />
                 </button>
               ) : (
                 <button
                   onClick={() => { setEditingId(item.id); setEditName(item.name) }}
                   title="שנה שם"
-                  className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                  className="rounded-lg p-1.5 text-slate-400 hover:bg-white/10 hover:text-slate-300"
                 >
                   <Pencil size={15} />
                 </button>
@@ -237,7 +237,7 @@ function ManagedList({
               <button
                 onClick={() => toggle(item)}
                 title={item.active ? 'הסתר' : 'הפעל'}
-                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                className="rounded-lg p-1.5 text-slate-400 hover:bg-white/10 hover:text-slate-300"
               >
                 {item.active ? <Eye size={15} /> : <EyeOff size={15} />}
               </button>

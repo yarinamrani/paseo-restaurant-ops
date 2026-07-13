@@ -11,9 +11,9 @@ type Member = {
 }
 
 const roleLabels: Record<string, { label: string; cls: string }> = {
-  admin: { label: 'מנהל', cls: 'bg-emerald-100 text-emerald-700' },
-  staff: { label: 'עובד', cls: 'bg-slate-100 text-slate-600' },
-  pending: { label: 'ממתין לאישור', cls: 'bg-amber-100 text-amber-700' },
+  admin: { label: 'מנהל', cls: 'bg-emerald-500/15 text-emerald-300' },
+  staff: { label: 'עובד', cls: 'bg-white/10 text-slate-400' },
+  pending: { label: 'ממתין לאישור', cls: 'bg-amber-500/15 text-amber-300' },
 }
 
 export default function TeamPage() {
@@ -83,7 +83,7 @@ export default function TeamPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold text-slate-900">צוות</h2>
+        <h2 className="text-xl font-bold text-slate-100">צוות</h2>
         <p className="text-sm text-slate-500">
           {active.length} חברי צוות{pending.length > 0 && ` · ${pending.length} ממתינים לאישור`}
         </p>
@@ -91,15 +91,15 @@ export default function TeamPage() {
 
       {pending.length > 0 && (
         <section>
-          <h3 className="mb-2 flex items-center gap-1.5 text-sm font-bold text-amber-600">
+          <h3 className="mb-2 flex items-center gap-1.5 text-sm font-bold text-amber-400">
             <Clock size={15} />
             ממתינים לאישור
           </h3>
           <div className="space-y-2">
             {pending.map((m) => (
-              <div key={m.user_id} className="flex items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50/50 p-4">
+              <div key={m.user_id} className="flex items-center justify-between gap-3 rounded-xl border border-amber-400/30 bg-amber-500/10 p-4">
                 <div className="min-w-0">
-                  <p className="font-medium text-slate-900">{m.full_name || 'ללא שם'}</p>
+                  <p className="font-medium text-slate-100">{m.full_name || 'ללא שם'}</p>
                   <p className="truncate text-sm text-slate-500" dir="ltr">{m.email}</p>
                 </div>
                 <button
@@ -122,16 +122,16 @@ export default function TeamPage() {
             const rl = roleLabels[m.role]
             const isSelf = m.user_id === me
             return (
-              <div key={m.user_id} className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white p-4">
+              <div key={m.user_id} className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-slate-900/60 p-4">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <p className="font-medium text-slate-900">{m.full_name || 'ללא שם'}</p>
+                    <p className="font-medium text-slate-100">{m.full_name || 'ללא שם'}</p>
                     <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${rl.cls}`}>{rl.label}</span>
                     {isSelf && <span className="text-xs text-slate-400">(אתה)</span>}
                   </div>
                   <p className="truncate text-sm text-slate-500" dir="ltr">{m.email}</p>
                   {m.role === 'admin' ? (
-                    <p className="mt-1.5 text-xs text-emerald-700">גישה לכל העסקים (מנהל מערכת)</p>
+                    <p className="mt-1.5 text-xs text-emerald-300">גישה לכל העסקים (מנהל מערכת)</p>
                   ) : (
                     <div className="mt-1.5 flex flex-wrap items-center gap-1">
                       <span className="text-[11px] text-slate-400">עסקים:</span>
@@ -144,8 +144,8 @@ export default function TeamPage() {
                             title={has ? 'הסר גישה' : 'תן גישה'}
                             className={`rounded-full px-2 py-0.5 text-[11px] font-medium transition-colors ${
                               has
-                                ? 'bg-emerald-100 text-emerald-700'
-                                : 'border border-dashed border-slate-300 text-slate-400 hover:bg-slate-50'
+                                ? 'bg-emerald-500/15 text-emerald-300'
+                                : 'border border-dashed border-white/15 text-slate-400 hover:bg-white/5'
                             }`}
                           >
                             {b.name}
@@ -161,7 +161,7 @@ export default function TeamPage() {
                       <button
                         onClick={() => setRole(m, 'admin', `${m.full_name || m.email} הפך למנהל`)}
                         title="הפוך למנהל"
-                        className="flex items-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs text-slate-600 hover:bg-slate-50"
+                        className="flex items-center gap-1 rounded-lg border border-white/10 px-2.5 py-1.5 text-xs text-slate-400 hover:bg-white/5"
                       >
                         <ShieldCheck size={14} />
                         הפוך למנהל
@@ -170,7 +170,7 @@ export default function TeamPage() {
                       <button
                         onClick={() => setRole(m, 'staff', `${m.full_name || m.email} הורד לעובד`)}
                         title="הורד לעובד"
-                        className="flex items-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs text-slate-600 hover:bg-slate-50"
+                        className="flex items-center gap-1 rounded-lg border border-white/10 px-2.5 py-1.5 text-xs text-slate-400 hover:bg-white/5"
                       >
                         הורד לעובד
                       </button>
@@ -178,7 +178,7 @@ export default function TeamPage() {
                     <button
                       onClick={() => setRole(m, 'pending', `הגישה של ${m.full_name || m.email} הושהתה`)}
                       title="השהה גישה"
-                      className="flex items-center gap-1 rounded-lg border border-red-200 px-2.5 py-1.5 text-xs text-red-600 hover:bg-red-50"
+                      className="flex items-center gap-1 rounded-lg border border-red-400/30 px-2.5 py-1.5 text-xs text-red-400 hover:bg-red-500/10"
                     >
                       <UserMinus size={14} />
                       השהה
@@ -192,7 +192,7 @@ export default function TeamPage() {
       </section>
 
       {toast && (
-        <div className="fixed bottom-6 start-1/2 z-50 -translate-x-1/2 rtl:translate-x-1/2 rounded-full bg-slate-900 px-5 py-2.5 text-sm text-white shadow-lg">
+        <div className="fixed bottom-6 start-1/2 z-50 -translate-x-1/2 rtl:translate-x-1/2 rounded-full border border-white/10 bg-slate-800 px-5 py-2.5 text-sm text-white shadow-xl">
           {toast}
         </div>
       )}

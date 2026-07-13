@@ -84,14 +84,14 @@ export default function TasksPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold text-slate-900">משימות</h2>
+          <h2 className="text-xl font-bold text-slate-100">משימות</h2>
           <p className="text-sm text-slate-500">{open.length} פתוחות · {done.length} הושלמו</p>
         </div>
         <div className="flex shrink-0 gap-2">
           <button
             onClick={() => setRecurringOpen(true)}
             title="משימות חוזרות"
-            className="flex items-center gap-1.5 whitespace-nowrap rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50"
+            className="flex items-center gap-1.5 whitespace-nowrap rounded-lg border border-white/10 bg-slate-900/60 px-3 py-2 text-sm font-medium text-slate-400 hover:bg-white/5"
           >
             <Repeat size={15} />
             חוזרות
@@ -122,7 +122,7 @@ export default function TasksPage() {
               className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
                 assigneeFilter === key
                   ? 'bg-emerald-600 text-white'
-                  : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                  : 'border border-white/10 bg-slate-900/60 text-slate-400 hover:bg-white/5'
               }`}
             >
               {label}
@@ -141,7 +141,7 @@ export default function TasksPage() {
             key={v}
             onClick={() => switchView(v)}
             className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
-              view === v ? 'bg-slate-900 text-white' : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+              view === v ? 'bg-emerald-400 text-emerald-950 shadow-md shadow-emerald-400/25' : 'border border-white/10 bg-slate-900/60 text-slate-400 hover:bg-white/5'
             }`}
           >
             <Icon size={14} />
@@ -155,10 +155,10 @@ export default function TasksPage() {
       ) : view === 'calendar' ? (
         <CalendarView tasks={filtered} onOpen={setDetail} />
       ) : filtered.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-slate-300 bg-white py-12 text-center text-slate-500">
+        <div className="rounded-2xl border border-dashed border-white/15 bg-slate-900/60 py-12 text-center text-slate-500">
           אין משימות עדיין
           <div className="mt-2">
-            <button onClick={() => setAddOpen(true)} className="text-sm font-medium text-emerald-700 hover:underline">
+            <button onClick={() => setAddOpen(true)} className="text-sm font-medium text-emerald-300 hover:underline">
               הוסף משימה ראשונה
             </button>
           </div>
@@ -170,18 +170,18 @@ export default function TasksPage() {
             return (
               <div
                 key={t.id}
-                className={`flex items-start gap-3 rounded-xl border border-slate-200/80 border-s-4 bg-white p-4 shadow-sm transition-shadow hover:shadow-md ${
-                  t.status === 'done' ? 'border-s-emerald-300 opacity-60' : (priorityBar[t.priority] ?? priorityBar.medium)
+                className={`flex items-start gap-3 rounded-xl border border-white/10 border-s-4 bg-slate-900/60 p-4 shadow-sm transition-shadow hover:shadow-md ${
+                  t.status === 'done' ? 'border-s-emerald-500/70 opacity-60' : (priorityBar[t.priority] ?? priorityBar.medium)
                 }`}
               >
-                <button onClick={() => toggle(t)} className="mt-0.5 text-emerald-600">
+                <button onClick={() => toggle(t)} className="mt-0.5 text-emerald-400">
                   {t.status === 'done' ? <CheckCircle2 size={20} /> : <Circle size={20} className="text-slate-300 hover:text-emerald-500" />}
                 </button>
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <span
                       onClick={() => setDetail(t)}
-                      className={`cursor-pointer font-medium text-slate-900 hover:underline ${t.status === 'done' ? 'line-through' : ''}`}
+                      className={`cursor-pointer font-medium text-slate-100 hover:underline ${t.status === 'done' ? 'line-through' : ''}`}
                     >{t.title}</span>
                     <BranchBadge name={bizName(t.business_id, t.branch)} />
                     <AreaBadge name={areaName(t.area_id)} />
@@ -189,13 +189,13 @@ export default function TasksPage() {
                       <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusCls(t.status)}`}>{statusLabel(t.status)}</span>
                     )}
                     {t.priority === 'high' && t.status === 'open' && (
-                      <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">דחוף</span>
+                      <span className="rounded-full bg-red-500/15 px-2 py-0.5 text-xs font-medium text-red-300">דחוף</span>
                     )}
                     {overdue && (
-                      <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">באיחור</span>
+                      <span className="rounded-full bg-red-500/15 px-2 py-0.5 text-xs font-medium text-red-300">באיחור</span>
                     )}
                   </div>
-                  {t.description && <p className="mt-0.5 text-sm text-slate-600">{t.description}</p>}
+                  {t.description && <p className="mt-0.5 text-sm text-slate-400">{t.description}</p>}
                   <div className="mt-1 flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-slate-500">
                     {t.deadline && (
                       <span className="flex items-center gap-1">
@@ -220,7 +220,7 @@ export default function TasksPage() {
                 )}
                 <button
                   onClick={() => setEditing(t)}
-                  className="mt-0.5 shrink-0 rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                  className="mt-0.5 shrink-0 rounded-lg p-1.5 text-slate-400 hover:bg-white/10 hover:text-slate-300"
                   title="ערוך משימה"
                 >
                   <Pencil size={15} />
@@ -326,12 +326,12 @@ function TaskDialog({
         <div className="grid grid-cols-2 gap-3">
           <AssigneeSelect value={assigneeId} legacyName={task?.assignee_name} onChange={setAssigneeId} />
           <label className="block text-sm">
-            <span className="mb-1 block text-slate-600">דד-ליין</span>
+            <span className="mb-1 block text-slate-400">דד-ליין</span>
             <input type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} className={inputCls} />
           </label>
         </div>
         <label className="block text-sm">
-          <span className="mb-1 block text-slate-600">דחיפות</span>
+          <span className="mb-1 block text-slate-400">דחיפות</span>
           <select value={priority} onChange={(e) => setPriority(e.target.value)} className={inputCls}>
             <option value="high">דחוף</option>
             <option value="medium">רגיל</option>
@@ -342,7 +342,7 @@ function TaskDialog({
           <input ref={fileRef} type="file" accept="image/*,.heic,.heif" hidden onChange={(e) => pickFile(e.target.files?.[0] ?? null)} />
           <button
             type="button" onClick={() => fileRef.current?.click()}
-            className="flex items-center gap-1.5 rounded-lg border border-dashed border-slate-300 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50"
+            className="flex items-center gap-1.5 rounded-lg border border-dashed border-white/15 px-3 py-2 text-sm text-slate-400 hover:bg-white/5"
           >
             <ImagePlus size={15} />
             {processing ? 'מעבד תמונה...' : file || task?.image_url ? 'החלף את התמונה' : 'צרף תמונה'}
@@ -351,7 +351,7 @@ function TaskDialog({
             <img
               src={file ? URL.createObjectURL(file) : task!.image_url!}
               alt="תצוגה מקדימה"
-              className="h-16 w-16 rounded-lg border border-slate-200 object-cover"
+              className="h-16 w-16 rounded-lg border border-white/10 object-cover"
             />
           )}
         </div>
@@ -431,18 +431,18 @@ function RecurringModal({ onClose }: { onClose: () => void }) {
       </p>
 
       {items.length === 0 && !adding && (
-        <p className="mb-3 rounded-xl border border-dashed border-slate-300 py-6 text-center text-sm text-slate-400">
+        <p className="mb-3 rounded-xl border border-dashed border-white/15 py-6 text-center text-sm text-slate-400">
           אין משימות חוזרות עדיין
         </p>
       )}
 
       <div className="mb-3 space-y-2">
         {items.map((r) => (
-          <div key={r.id} className={`rounded-xl border border-slate-200 p-3 ${r.active ? 'bg-white' : 'bg-slate-50 opacity-70'}`}>
+          <div key={r.id} className={`rounded-xl border border-white/10 p-3 ${r.active ? 'bg-slate-900/60' : 'bg-white/5 opacity-70'}`}>
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-1.5">
-                  <span className="text-sm font-medium text-slate-900">{r.title}</span>
+                  <span className="text-sm font-medium text-slate-100">{r.title}</span>
                   <BranchBadge name={bizName(r.business_id, r.branch)} />
                 </div>
                 <p className="mt-0.5 text-xs text-slate-500">
@@ -451,10 +451,10 @@ function RecurringModal({ onClose }: { onClose: () => void }) {
                 </p>
               </div>
               <div className="flex shrink-0 gap-1">
-                <button onClick={() => toggleActive(r)} title={r.active ? 'השהה' : 'הפעל'} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700">
+                <button onClick={() => toggleActive(r)} title={r.active ? 'השהה' : 'הפעל'} className="rounded-lg p-1.5 text-slate-400 hover:bg-white/10 hover:text-slate-300">
                   {r.active ? <Pause size={14} /> : <Play size={14} />}
                 </button>
-                <button onClick={() => remove(r)} title="מחק" className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600">
+                <button onClick={() => remove(r)} title="מחק" className="rounded-lg p-1.5 text-slate-400 hover:bg-red-500/10 hover:text-red-400">
                   <Trash2 size={14} />
                 </button>
               </div>
@@ -464,12 +464,12 @@ function RecurringModal({ onClose }: { onClose: () => void }) {
       </div>
 
       {adding ? (
-        <form onSubmit={add} className="space-y-3 rounded-xl border border-emerald-200 bg-emerald-50/40 p-3">
+        <form onSubmit={add} className="space-y-3 rounded-xl border border-emerald-400/30 bg-emerald-500/10/40 p-3">
           <input required autoFocus value={title} onChange={(e) => setTitle(e.target.value)} placeholder="מה המשימה? (ניקוי מנדפים...)" className={inputCls} />
           <BranchSelect value={bizId} onChange={setBizId} />
           <div className="grid grid-cols-2 gap-3">
             <label className="block text-sm">
-              <span className="mb-1 block text-slate-600">תדירות</span>
+              <span className="mb-1 block text-slate-400">תדירות</span>
               <select value={intervalDays} onChange={(e) => setIntervalDays(Number(e.target.value))} className={inputCls}>
                 {FREQUENCIES.map((f) => (
                   <option key={f.days} value={f.days}>{f.label}</option>
@@ -477,7 +477,7 @@ function RecurringModal({ onClose }: { onClose: () => void }) {
               </select>
             </label>
             <label className="block text-sm">
-              <span className="mb-1 block text-slate-600">תאריך ראשון</span>
+              <span className="mb-1 block text-slate-400">תאריך ראשון</span>
               <input type="date" required value={firstDue} onChange={(e) => setFirstDue(e.target.value)} className={inputCls} />
             </label>
           </div>
@@ -487,7 +487,7 @@ function RecurringModal({ onClose }: { onClose: () => void }) {
       ) : (
         <button
           onClick={() => setAdding(true)}
-          className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-emerald-300 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-50"
+          className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-emerald-400/40 py-2 text-sm font-medium text-emerald-300 hover:bg-emerald-500/10"
         >
           <Plus size={15} />
           הוסף משימה חוזרת

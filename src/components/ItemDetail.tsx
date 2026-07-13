@@ -193,14 +193,14 @@ export default function ItemDetail({
           {item.assignee_name && <span className="text-xs text-slate-500">באחריות {item.assignee_name}</span>}
         </div>
 
-        {item.description && <p className="text-sm text-slate-600">{item.description}</p>}
+        {item.description && <p className="text-sm text-slate-400">{item.description}</p>}
 
         <label className="block text-sm">
-          <span className="mb-1 block text-slate-600">סטטוס</span>
+          <span className="mb-1 block text-slate-400">סטטוס</span>
           <select
             value={status}
             onChange={(e) => changeStatus(e.target.value)}
-            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none"
+            className="w-full rounded-lg border border-white/15 bg-slate-900/60 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none"
           >
             {ITEM_STATUSES.filter((s) => !(kind === 'fault' && s.value === 'done')).map((s) => (
               <option key={s.value} value={s.value}>{s.label}</option>
@@ -224,24 +224,24 @@ export default function ItemDetail({
                 att.mime_type?.startsWith('image/') ? (
                   <div key={att.id} className="group relative">
                     <a href={att.url} target="_blank" rel="noreferrer">
-                      <img src={att.url} alt={att.file_name} className="h-16 w-16 rounded-lg border border-slate-200 object-cover" />
+                      <img src={att.url} alt={att.file_name} className="h-16 w-16 rounded-lg border border-white/10 object-cover" />
                     </a>
                     <button
                       onClick={() => removeAttachment(att)}
-                      className="absolute -top-1.5 -end-1.5 hidden rounded-full bg-slate-900 p-0.5 text-white group-hover:block"
+                      className="absolute -top-1.5 -end-1.5 hidden rounded-full bg-slate-700 p-0.5 text-white group-hover:block"
                     >
                       <X size={11} />
                     </button>
                   </div>
                 ) : (
-                  <div key={att.id} className="group relative flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2">
+                  <div key={att.id} className="group relative flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-2.5 py-2">
                     <FileText size={14} className="text-slate-400" />
-                    <a href={att.url} target="_blank" rel="noreferrer" className="max-w-32 truncate text-xs text-slate-700 hover:underline">
+                    <a href={att.url} target="_blank" rel="noreferrer" className="max-w-32 truncate text-xs text-slate-300 hover:underline">
                       {att.file_name}
                     </a>
                     <button
                       onClick={() => removeAttachment(att)}
-                      className="absolute -top-1.5 -end-1.5 hidden rounded-full bg-slate-900 p-0.5 text-white group-hover:block"
+                      className="absolute -top-1.5 -end-1.5 hidden rounded-full bg-slate-700 p-0.5 text-white group-hover:block"
                     >
                       <X size={11} />
                     </button>
@@ -262,12 +262,12 @@ export default function ItemDetail({
             type="button"
             onClick={() => fileRef.current?.click()}
             disabled={uploading}
-            className="flex items-center gap-1.5 rounded-lg border border-dashed border-slate-300 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 disabled:opacity-50"
+            className="flex items-center gap-1.5 rounded-lg border border-dashed border-white/15 px-3 py-2 text-sm text-slate-400 hover:bg-white/5 disabled:opacity-50"
           >
             <Paperclip size={14} />
             {uploading ? 'מעלה...' : 'צרף קבצים (תמונות, וידאו, מסמכים)'}
           </button>
-          {uploadError && <p className="mt-1 text-xs text-red-600">{uploadError}</p>}
+          {uploadError && <p className="mt-1 text-xs text-red-400">{uploadError}</p>}
         </section>
 
         {/* comments */}
@@ -279,8 +279,8 @@ export default function ItemDetail({
           <div className="max-h-44 space-y-2 overflow-y-auto">
             {comments.length === 0 && <p className="text-xs text-slate-400">אין תגובות עדיין</p>}
             {comments.map((c) => (
-              <div key={c.id} className="rounded-xl bg-slate-50 px-3 py-2">
-                <p className="text-sm text-slate-700">{c.body}</p>
+              <div key={c.id} className="rounded-xl bg-white/5 px-3 py-2">
+                <p className="text-sm text-slate-300">{c.body}</p>
                 <p className="mt-0.5 text-[11px] text-slate-400">
                   {c.user_name || '—'} · {format(new Date(c.created_at), 'd.M HH:mm')}
                 </p>
@@ -292,7 +292,7 @@ export default function ItemDetail({
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
               placeholder="כתוב תגובה או עדכון..."
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none"
+              className="w-full rounded-lg border border-white/15 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none"
             />
             <button
               disabled={busy || !newComment.trim()}
@@ -309,7 +309,7 @@ export default function ItemDetail({
             <History size={14} />
             יומן פעילות
           </h4>
-          <div className="max-h-44 space-y-1.5 overflow-y-auto border-s-2 border-slate-100 ps-3">
+          <div className="max-h-44 space-y-1.5 overflow-y-auto border-s-2 border-white/5 ps-3">
             {activity.map((a) => (
               <div key={a.id} className="text-xs text-slate-500">
                 <span className="me-1.5 inline-flex items-center gap-1 text-slate-400">
@@ -323,15 +323,15 @@ export default function ItemDetail({
           </div>
         </section>
 
-        <div className="flex justify-between border-t border-slate-100 pt-3">
+        <div className="flex justify-between border-t border-white/5 pt-3">
           <button
             onClick={softDelete}
-            className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm text-red-500 hover:bg-red-50"
+            className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm text-red-400 hover:bg-red-500/10"
           >
             <Trash2 size={14} />
             העבר לסל מחזור
           </button>
-          <button onClick={onClose} className="rounded-lg bg-slate-900 px-4 py-1.5 text-sm font-medium text-white hover:bg-slate-700">
+          <button onClick={onClose} className="rounded-lg bg-emerald-400 px-4 py-1.5 text-sm font-semibold text-emerald-950 hover:bg-emerald-300">
             סגור
           </button>
         </div>

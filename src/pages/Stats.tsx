@@ -112,12 +112,12 @@ export default function StatsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold text-slate-900">דשבורד</h2>
+          <h2 className="text-xl font-bold text-slate-100">דשבורד</h2>
           <p className="text-sm text-slate-500">תפעול, עלויות ועומסים</p>
         </div>
         <button
           onClick={exportCsv}
-          className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50"
+          className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg border border-white/10 bg-slate-900/60 px-3 py-2 text-sm font-medium text-slate-400 hover:bg-white/5"
         >
           <Download size={15} />
           ייצוא CSV
@@ -126,17 +126,17 @@ export default function StatsPage() {
 
       {/* KPI row */}
       <div className="grid grid-cols-3 gap-3">
-        <div className={`rounded-2xl border p-4 ${overdueCount > 0 ? 'border-red-200 bg-red-50' : 'border-slate-200 bg-white'}`}>
+        <div className={`rounded-2xl border p-4 ${overdueCount > 0 ? 'border-red-400/30 bg-red-500/10' : 'border-white/10 bg-slate-900/60'}`}>
           <p className="flex items-center gap-1 text-xs text-slate-500"><AlertTriangle size={12} className="text-red-400" />באיחור</p>
-          <p className={`mt-1 text-xl font-bold ltr-num ${overdueCount > 0 ? 'text-red-600' : 'text-slate-900'}`}>{overdueCount}</p>
+          <p className={`mt-1 text-xl font-bold ltr-num ${overdueCount > 0 ? 'text-red-400' : 'text-slate-100'}`}>{overdueCount}</p>
         </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-4">
+        <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-4">
           <p className="flex items-center gap-1 text-xs text-slate-500"><Timer size={12} className="text-sky-500" />זמן טיפול ממוצע בתקלה</p>
-          <p className="mt-1 text-xl font-bold text-slate-900 ltr-num">{avgResolutionDays === null ? '—' : avgResolutionDays < 1 ? '<1 יום' : Math.round(avgResolutionDays) + ' ימים'}</p>
+          <p className="mt-1 text-xl font-bold text-slate-100 ltr-num">{avgResolutionDays === null ? '—' : avgResolutionDays < 1 ? '<1 יום' : Math.round(avgResolutionDays) + ' ימים'}</p>
         </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-4">
+        <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-4">
           <p className="flex items-center gap-1 text-xs text-slate-500"><Target size={12} className="text-violet-500" />עמידה בזמנים</p>
-          <p className="mt-1 text-xl font-bold text-slate-900 ltr-num">{onTimePct === null ? '—' : onTimePct + '%'}</p>
+          <p className="mt-1 text-xl font-bold text-slate-100 ltr-num">{onTimePct === null ? '—' : onTimePct + '%'}</p>
         </div>
       </div>
 
@@ -146,14 +146,14 @@ export default function StatsPage() {
           {format(now, 'MMMM yyyy', { locale: he })} — עלויות תיקון
         </h3>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <div className="rounded-2xl border border-slate-200 bg-white p-4">
+          <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-4">
             <p className="text-xs text-slate-500">סה"כ החודש</p>
-            <p className="mt-1 text-xl font-bold text-slate-900 ltr-num">₪{costOf(monthDone).toLocaleString()}</p>
+            <p className="mt-1 text-xl font-bold text-slate-100 ltr-num">₪{costOf(monthDone).toLocaleString()}</p>
           </div>
           {activeBiz.map((b, i) => (
-            <div key={b.id} className="rounded-2xl border border-slate-200 bg-white p-4">
+            <div key={b.id} className="rounded-2xl border border-white/10 bg-slate-900/60 p-4">
               <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${badgeColorFor(b.name, i)}`}>{b.name}</span>
-              <p className="mt-1.5 text-xl font-bold text-slate-900 ltr-num">
+              <p className="mt-1.5 text-xl font-bold text-slate-100 ltr-num">
                 ₪{costOf(monthDone.filter((t) => t.business_id === b.id)).toLocaleString()}
               </p>
             </div>
@@ -162,7 +162,7 @@ export default function StatsPage() {
       </section>
 
       {/* 6-month chart */}
-      <section className="rounded-2xl border border-slate-200 bg-white p-4">
+      <section className="rounded-2xl border border-white/10 bg-slate-900/60 p-4">
         <h3 className="mb-4 flex items-center gap-1.5 text-sm font-bold text-slate-500">
           <TrendingUp size={15} />
           חצי שנה אחרונה
@@ -183,7 +183,7 @@ export default function StatsPage() {
                     />
                   ) : null
                 )}
-                {m.total === 0 && <div className="h-full bg-slate-100" />}
+                {m.total === 0 && <div className="h-full bg-white/10" />}
               </div>
               <span className="text-xs text-slate-500">{m.label}</span>
             </div>
@@ -201,7 +201,7 @@ export default function StatsPage() {
 
       <div className="grid gap-3 sm:grid-cols-2">
         {/* Open faults per branch */}
-        <section className="rounded-2xl border border-slate-200 bg-white p-4">
+        <section className="rounded-2xl border border-white/10 bg-slate-900/60 p-4">
           <h3 className="mb-3 flex items-center gap-1.5 text-sm font-bold text-slate-500">
             <Wrench size={15} />
             תקלות פתוחות
@@ -210,14 +210,14 @@ export default function StatsPage() {
             {openByBranch.map(({ id, name, idx, count }) => (
               <div key={id} className="flex items-center justify-between">
                 <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${badgeColorFor(name, idx)}`}>{name}</span>
-                <span className="font-bold text-slate-900 ltr-num">{count}</span>
+                <span className="font-bold text-slate-100 ltr-num">{count}</span>
               </div>
             ))}
           </div>
         </section>
 
         {/* Top vendors by cost */}
-        <section className="rounded-2xl border border-slate-200 bg-white p-4">
+        <section className="rounded-2xl border border-white/10 bg-slate-900/60 p-4">
           <h3 className="mb-3 text-sm font-bold text-slate-500">אנשי מקצוע — סה"כ עלויות</h3>
           {vendorCosts.length === 0 ? (
             <p className="text-sm text-slate-400">אין עדיין תיקונים עם עלות ואיש מקצוע</p>
@@ -225,8 +225,8 @@ export default function StatsPage() {
             <div className="space-y-2">
               {vendorCosts.map(({ v, total }) => (
                 <div key={v.id} className="flex items-center justify-between text-sm">
-                  <span className="text-slate-700">{v.name || v.profession}</span>
-                  <span className="font-bold text-slate-900 ltr-num">₪{total.toLocaleString()}</span>
+                  <span className="text-slate-300">{v.name || v.profession}</span>
+                  <span className="font-bold text-slate-100 ltr-num">₪{total.toLocaleString()}</span>
                 </div>
               ))}
             </div>
@@ -235,7 +235,7 @@ export default function StatsPage() {
       </div>
 
       {/* Open load per assignee */}
-      <section className="rounded-2xl border border-slate-200 bg-white p-4">
+      <section className="rounded-2xl border border-white/10 bg-slate-900/60 p-4">
         <h3 className="mb-3 flex items-center gap-1.5 text-sm font-bold text-slate-500">
           <Users size={15} />
           עומס פתוח לפי אחראי
@@ -246,11 +246,11 @@ export default function StatsPage() {
           <div className="space-y-2">
             {openByAssignee.map(([name, count]) => (
               <div key={name} className="flex items-center gap-2">
-                <span className="w-28 shrink-0 truncate text-sm text-slate-700">{name}</span>
-                <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-slate-100">
+                <span className="w-28 shrink-0 truncate text-sm text-slate-300">{name}</span>
+                <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-white/10">
                   <div className="h-full rounded-full bg-emerald-500" style={{ width: `${(count / openByAssignee[0][1]) * 100}%` }} />
                 </div>
-                <span className="w-6 text-end text-sm font-bold text-slate-900 ltr-num">{count}</span>
+                <span className="w-6 text-end text-sm font-bold text-slate-100 ltr-num">{count}</span>
               </div>
             ))}
           </div>
@@ -258,9 +258,9 @@ export default function StatsPage() {
       </section>
 
       {/* Active warranties */}
-      <section className="rounded-2xl border border-slate-200 bg-white p-4">
+      <section className="rounded-2xl border border-white/10 bg-slate-900/60 p-4">
         <h3 className="mb-3 flex items-center gap-1.5 text-sm font-bold text-slate-500">
-          <ShieldCheck size={15} className="text-emerald-600" />
+          <ShieldCheck size={15} className="text-emerald-400" />
           אחריות פעילה ({activeWarranties.length})
         </h3>
         {activeWarranties.length === 0 ? (
@@ -269,8 +269,8 @@ export default function StatsPage() {
           <div className="space-y-2">
             {activeWarranties.map((t) => (
               <div key={t.id} className="flex items-center justify-between gap-2 text-sm">
-                <span className="text-slate-700">{t.title}</span>
-                <span className="shrink-0 text-emerald-700">
+                <span className="text-slate-300">{t.title}</span>
+                <span className="shrink-0 text-emerald-300">
                   עד {format(new Date(t.warranty_until!), 'd.M.yyyy')}
                 </span>
               </div>

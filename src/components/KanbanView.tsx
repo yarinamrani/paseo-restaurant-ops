@@ -21,7 +21,7 @@ export default function KanbanView({
         return (
           <div
             key={col.value}
-            className="w-60 shrink-0 rounded-2xl bg-slate-100/80 p-2"
+            className="w-60 shrink-0 rounded-2xl bg-white/5 p-2"
             onDragOver={(e) => e.preventDefault()}
             onDrop={(e) => {
               e.preventDefault()
@@ -40,15 +40,15 @@ export default function KanbanView({
                   draggable
                   onDragStart={(e) => e.dataTransfer.setData('text/plain', t.id)}
                   onClick={() => onOpen(t)}
-                  className={`cursor-pointer rounded-xl border border-slate-200/80 border-s-4 ${t.status === 'done' ? 'border-s-emerald-300' : (priorityBar[t.priority] ?? priorityBar.medium)} bg-white p-3 shadow-sm transition-shadow hover:shadow-md`}
+                  className={`cursor-pointer rounded-xl border border-white/10 border-s-4 ${t.status === 'done' ? 'border-s-emerald-500/70' : (priorityBar[t.priority] ?? priorityBar.medium)} bg-slate-900/60 p-3 shadow-sm transition-shadow hover:shadow-md`}
                 >
-                  <p className={`text-sm font-medium text-slate-900 ${t.status === 'done' ? 'line-through opacity-60' : ''}`}>
+                  <p className={`text-sm font-medium text-slate-100 ${t.status === 'done' ? 'line-through opacity-60' : ''}`}>
                     {t.title}
                   </p>
                   <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
                     <BranchBadge name={bizName(t.business_id, t.branch)} />
                     {t.priority === 'high' && (
-                      <span className="rounded-full bg-red-100 px-2 py-0.5 text-[11px] font-medium text-red-700">דחוף</span>
+                      <span className="rounded-full bg-red-500/15 px-2 py-0.5 text-[11px] font-medium text-red-300">דחוף</span>
                     )}
                   </div>
                   <div className="mt-1.5 flex flex-wrap gap-x-3 text-[11px] text-slate-400">

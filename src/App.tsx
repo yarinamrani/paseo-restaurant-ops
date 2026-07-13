@@ -86,12 +86,12 @@ export default function App() {
 function PendingApproval() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-amber-50 to-slate-50 px-4">
-      <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
-        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-100 text-amber-600">
+      <div className="w-full max-w-sm rounded-2xl border border-white/10 bg-slate-900/60 p-8 text-center shadow-sm">
+        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-500/15 text-amber-400">
           <Clock size={28} />
         </div>
-        <h1 className="text-lg font-bold text-slate-900">ההרשמה התקבלה!</h1>
-        <p className="mt-2 text-sm leading-relaxed text-slate-600">
+        <h1 className="text-lg font-bold text-slate-100">ההרשמה התקבלה!</h1>
+        <p className="mt-2 text-sm leading-relaxed text-slate-400">
           החשבון שלך ממתין לאישור של מנהל.
           <br />
           ברגע שיאשרו אותך תוכל להיכנס למערכת.
@@ -106,7 +106,7 @@ function PendingApproval() {
           </button>
           <button
             onClick={() => supabase.auth.signOut()}
-            className="flex items-center justify-center gap-1.5 rounded-lg py-2 text-sm text-slate-500 hover:bg-slate-100"
+            className="flex items-center justify-center gap-1.5 rounded-lg py-2 text-sm text-slate-500 hover:bg-white/10"
           >
             <LogOut size={15} className="rtl:-scale-x-100" />
             התנתק

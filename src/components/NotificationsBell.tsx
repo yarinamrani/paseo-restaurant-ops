@@ -69,7 +69,7 @@ export default function NotificationsBell() {
     <div className="relative" ref={panelRef}>
       <button
         onClick={() => setOpen(!open)}
-        className="relative rounded-lg p-2 text-emerald-50/90 hover:bg-white/10"
+        className="relative rounded-lg p-2 text-slate-300 hover:bg-white/10"
         title="התראות"
       >
         <Bell size={18} />
@@ -81,11 +81,11 @@ export default function NotificationsBell() {
       </button>
 
       {open && (
-        <div className="absolute end-0 top-11 z-40 w-80 max-w-[85vw] rounded-2xl border border-slate-200 bg-white shadow-2xl">
-          <div className="flex items-center justify-between border-b border-slate-100 px-4 py-2.5">
-            <span className="text-sm font-bold text-slate-700">התראות</span>
+        <div className="absolute end-0 top-11 z-40 w-80 max-w-[85vw] rounded-2xl border border-white/10 bg-slate-900/60 shadow-2xl">
+          <div className="flex items-center justify-between border-b border-white/5 px-4 py-2.5">
+            <span className="text-sm font-bold text-slate-300">התראות</span>
             {unread > 0 && (
-              <button onClick={markAllRead} className="flex items-center gap-1 text-xs text-emerald-700 hover:underline">
+              <button onClick={markAllRead} className="flex items-center gap-1 text-xs text-emerald-300 hover:underline">
                 <CheckCheck size={13} />
                 סמן הכל כנקרא
               </button>
@@ -97,14 +97,14 @@ export default function NotificationsBell() {
               <button
                 key={n.id}
                 onClick={() => openNotification(n)}
-                className={`block w-full border-b border-slate-50 px-4 py-2.5 text-start hover:bg-slate-50 ${
+                className={`block w-full border-b border-white/5 px-4 py-2.5 text-start hover:bg-white/5 ${
                   n.read_at ? 'opacity-60' : ''
                 }`}
               >
                 <div className="flex items-start gap-2">
                   {!n.read_at && <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-emerald-500" />}
                   <div className="min-w-0">
-                    <p className="text-sm font-medium text-slate-800">{n.title}</p>
+                    <p className="text-sm font-medium text-slate-200">{n.title}</p>
                     {n.body && <p className="truncate text-xs text-slate-500">{n.body}</p>}
                     <p className="mt-0.5 text-[11px] text-slate-400">{format(new Date(n.created_at), 'd.M HH:mm')}</p>
                   </div>

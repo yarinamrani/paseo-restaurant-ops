@@ -24,13 +24,13 @@ export default function CalendarView({
   const noDeadline = tasks.filter((t) => !t.deadline && isOpenStatus(t.status)).length
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-3">
+    <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-3">
       <div className="mb-3 flex items-center justify-between">
-        <button onClick={() => setMonth(addMonths(month, -1))} className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100">
+        <button onClick={() => setMonth(addMonths(month, -1))} className="rounded-lg p-1.5 text-slate-500 hover:bg-white/10">
           <ChevronRight size={18} />
         </button>
-        <span className="font-bold text-slate-800">{format(month, 'MMMM yyyy', { locale: he })}</span>
-        <button onClick={() => setMonth(addMonths(month, 1))} className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100">
+        <span className="font-bold text-slate-200">{format(month, 'MMMM yyyy', { locale: he })}</span>
+        <button onClick={() => setMonth(addMonths(month, 1))} className="rounded-lg p-1.5 text-slate-500 hover:bg-white/10">
           <ChevronLeft size={18} />
         </button>
       </div>
@@ -45,7 +45,7 @@ export default function CalendarView({
           <div
             key={i}
             className={`min-h-16 rounded-lg border p-1 ${
-              day && isSameDay(day, today) ? 'border-emerald-400 bg-emerald-50/50' : 'border-slate-100'
+              day && isSameDay(day, today) ? 'border-emerald-400 bg-emerald-500/10' : 'border-white/5'
             } ${day ? '' : 'border-transparent'}`}
           >
             {day && (
@@ -60,10 +60,10 @@ export default function CalendarView({
                         onClick={() => onOpen(t)}
                         className={`block w-full truncate rounded px-1 py-0.5 text-start text-[10px] leading-tight ${
                           t.status === 'done'
-                            ? 'bg-slate-100 text-slate-400 line-through'
+                            ? 'bg-white/10 text-slate-400 line-through'
                             : late
-                              ? 'bg-red-100 text-red-700'
-                              : 'bg-emerald-100 text-emerald-800'
+                              ? 'bg-red-500/15 text-red-300'
+                              : 'bg-emerald-500/15 text-emerald-300'
                         }`}
                         title={t.title}
                       >

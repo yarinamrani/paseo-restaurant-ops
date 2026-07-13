@@ -31,12 +31,12 @@ export type Area = {
 }
 
 const BADGE_PALETTE = [
-  'bg-violet-100 text-violet-700',
-  'bg-emerald-100 text-emerald-700',
-  'bg-sky-100 text-sky-700',
-  'bg-amber-100 text-amber-700',
-  'bg-rose-100 text-rose-700',
-  'bg-indigo-100 text-indigo-700',
+  'bg-violet-500/15 text-violet-300',
+  'bg-emerald-500/15 text-emerald-300',
+  'bg-sky-500/15 text-sky-300',
+  'bg-amber-500/15 text-amber-300',
+  'bg-rose-500/15 text-rose-300',
+  'bg-indigo-500/15 text-indigo-300',
 ]
 
 export const BAR_PALETTE = [
@@ -59,17 +59,17 @@ export function badgeColorFor(name: string, index = 0): string {
 }
 
 export const ITEM_STATUSES = [
-  { value: 'open', label: 'פתוח', cls: 'bg-slate-100 text-slate-600' },
-  { value: 'in_progress', label: 'בטיפול', cls: 'bg-blue-100 text-blue-700' },
-  { value: 'waiting_supplier', label: 'ממתין לספק/טכנאי', cls: 'bg-amber-100 text-amber-700' },
-  { value: 'waiting_approval', label: 'ממתין לאישור', cls: 'bg-purple-100 text-purple-700' },
-  { value: 'on_hold', label: 'מושהה', cls: 'bg-slate-200 text-slate-500' },
-  { value: 'done', label: 'הושלם', cls: 'bg-emerald-100 text-emerald-700' },
-  { value: 'cancelled', label: 'בוטל', cls: 'bg-rose-100 text-rose-600' },
+  { value: 'open', label: 'פתוח', cls: 'bg-white/10 text-slate-400' },
+  { value: 'in_progress', label: 'בטיפול', cls: 'bg-blue-500/15 text-blue-300' },
+  { value: 'waiting_supplier', label: 'ממתין לספק/טכנאי', cls: 'bg-amber-500/15 text-amber-300' },
+  { value: 'waiting_approval', label: 'ממתין לאישור', cls: 'bg-purple-500/15 text-purple-300' },
+  { value: 'on_hold', label: 'מושהה', cls: 'bg-white/15 text-slate-500' },
+  { value: 'done', label: 'הושלם', cls: 'bg-emerald-500/15 text-emerald-300' },
+  { value: 'cancelled', label: 'בוטל', cls: 'bg-rose-500/15 text-rose-400' },
 ] as const
 
 export const statusLabel = (s: string) => ITEM_STATUSES.find((x) => x.value === s)?.label ?? s
-export const statusCls = (s: string) => ITEM_STATUSES.find((x) => x.value === s)?.cls ?? 'bg-slate-100 text-slate-600'
+export const statusCls = (s: string) => ITEM_STATUSES.find((x) => x.value === s)?.cls ?? 'bg-white/10 text-slate-400'
 export const isOpenStatus = (s: string) => s !== 'done' && s !== 'cancelled'
 
 export type ItemComment = {

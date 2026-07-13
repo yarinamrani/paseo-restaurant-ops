@@ -12,13 +12,13 @@ import { useOrg } from '../lib/org'
 export const priorityBar: Record<string, string> = {
   high: 'border-s-red-400',
   medium: 'border-s-amber-300',
-  low: 'border-s-slate-300',
+  low: 'border-s-slate-600',
 }
 
 const priorityLabels: Record<string, { label: string; cls: string }> = {
-  high: { label: 'דחוף', cls: 'bg-red-100 text-red-700' },
-  medium: { label: 'רגיל', cls: 'bg-amber-100 text-amber-700' },
-  low: { label: 'נמוך', cls: 'bg-slate-100 text-slate-600' },
+  high: { label: 'דחוף', cls: 'bg-red-500/15 text-red-300' },
+  medium: { label: 'רגיל', cls: 'bg-amber-500/15 text-amber-300' },
+  low: { label: 'נמוך', cls: 'bg-white/10 text-slate-400' },
 }
 
 export default function FaultsPage() {
@@ -60,7 +60,7 @@ export default function FaultsPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold text-slate-900">תקלות</h2>
+          <h2 className="text-xl font-bold text-slate-100">תקלות</h2>
           <p className="text-sm text-slate-500">
             {open.length} פתוחות · סה"כ עלויות תיקון: <span className="ltr-num">₪{totalCost.toLocaleString()}</span>
           </p>
@@ -77,7 +77,7 @@ export default function FaultsPage() {
       <BranchFilter value={branchFilter} onChange={setBranchFilter} counts={tasks.filter((t) => isOpenStatus(t.status))} />
 
       {open.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-slate-300 bg-white py-12 text-center text-slate-500">
+        <div className="rounded-2xl border border-dashed border-white/15 bg-slate-900/60 py-12 text-center text-slate-500">
           אין תקלות פתוחות 🎉
         </div>
       ) : (
@@ -90,7 +90,7 @@ export default function FaultsPage() {
 
       <button
         onClick={() => setShowDone(!showDone)}
-        className="flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-800"
+        className="flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-200"
       >
         <History size={15} />
         {showDone ? 'הסתר היסטוריית טיפולים' : `היסטוריית טיפולים (${done.length})`}
@@ -102,23 +102,23 @@ export default function FaultsPage() {
         ) : (
           <div className="space-y-2 opacity-80">
             {done.map((t) => (
-              <div key={t.id} className="rounded-xl border border-slate-200 bg-white p-4">
+              <div key={t.id} className="rounded-xl border border-white/10 bg-slate-900/60 p-4">
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 size={16} className="text-emerald-600" />
-                    <span className="font-medium text-slate-700 line-through">{t.title}</span>
+                    <CheckCircle2 size={16} className="text-emerald-400" />
+                    <span className="font-medium text-slate-300 line-through">{t.title}</span>
                     <BranchBadge name={bizName(t.business_id, t.branch)} />
                   </div>
                   <span className="text-sm text-slate-500 ltr-num">₪{(t.cost ?? 0).toLocaleString()}</span>
                 </div>
                 {t.warranty_until && (
                   new Date(t.warranty_until) >= new Date(new Date().toDateString()) ? (
-                    <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700">
+                    <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs font-medium text-emerald-300">
                       <ShieldCheck size={12} />
                       אחריות עד {format(new Date(t.warranty_until), 'd בMMMM yyyy', { locale: he })}
                     </span>
                   ) : (
-                    <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-500">
+                    <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-white/10 px-2 py-0.5 text-xs font-medium text-slate-500">
                       <ShieldCheck size={12} />
                       האחריות הסתיימה
                     </span>
@@ -172,7 +172,7 @@ export default function FaultsPage() {
       )}
 
       {toast && (
-        <div className="fixed bottom-6 start-1/2 z-50 -translate-x-1/2 rtl:translate-x-1/2 rounded-full bg-slate-900 px-5 py-2.5 text-sm text-white shadow-lg">
+        <div className="fixed bottom-6 start-1/2 z-50 -translate-x-1/2 rtl:translate-x-1/2 rounded-full border border-white/10 bg-slate-800 px-5 py-2.5 text-sm text-white shadow-xl">
           {toast}
         </div>
       )}
@@ -189,11 +189,11 @@ function FaultCard({
   const pr = priorityLabels[task.priority] ?? priorityLabels.medium
 
   return (
-    <div className={`rounded-2xl border border-slate-200/80 border-s-4 ${priorityBar[task.priority] ?? priorityBar.medium} bg-white p-4 shadow-sm transition-shadow hover:shadow-md`}>
+    <div className={`rounded-2xl border border-white/10 border-s-4 ${priorityBar[task.priority] ?? priorityBar.medium} bg-slate-900/60 p-4 shadow-sm transition-shadow hover:shadow-md`}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <h3 onClick={onOpen} className="cursor-pointer font-semibold text-slate-900 hover:underline">{task.title}</h3>
+            <h3 onClick={onOpen} className="cursor-pointer font-semibold text-slate-100 hover:underline">{task.title}</h3>
             <BranchBadge name={bizName(task.business_id, task.branch)} />
             <AreaBadge name={areaName(task.area_id)} />
             {task.status !== 'open' && (
@@ -201,13 +201,13 @@ function FaultCard({
             )}
             <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${pr.cls}`}>{pr.label}</span>
             {overdue && (
-              <span className="flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">
+              <span className="flex items-center gap-1 rounded-full bg-red-500/15 px-2 py-0.5 text-xs font-medium text-red-300">
                 <AlertTriangle size={12} />
                 באיחור
               </span>
             )}
           </div>
-          {task.description && <p className="mt-1 text-sm text-slate-600">{task.description}</p>}
+          {task.description && <p className="mt-1 text-sm text-slate-400">{task.description}</p>}
           <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">
             {task.due_date && (
               <span className="flex items-center gap-1">
@@ -230,7 +230,7 @@ function FaultCard({
                 {vendor.phone && (
                   <a
                     href={`tel:${vendor.phone}`}
-                    className="flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 font-medium text-emerald-700 hover:bg-emerald-100"
+                    className="flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 font-medium text-emerald-300 hover:bg-emerald-500/15"
                   >
                     <Phone size={11} />
                     התקשר עכשיו
@@ -246,17 +246,17 @@ function FaultCard({
           </a>
         )}
       </div>
-      <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-3">
+      <div className="mt-3 flex items-center justify-between border-t border-white/5 pt-3">
         <button
           onClick={onClose}
-          className="flex items-center gap-1.5 rounded-lg bg-slate-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-700"
+          className="flex items-center gap-1.5 rounded-lg bg-emerald-400 px-3 py-1.5 text-sm font-semibold text-emerald-950 hover:bg-emerald-300"
         >
           <CheckCircle2 size={15} />
           סגור קריאה
         </button>
         <button
           onClick={onEdit}
-          className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm text-slate-500 hover:bg-slate-100"
+          className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm text-slate-500 hover:bg-white/10"
           title="ערוך תקלה"
         >
           <Pencil size={14} />
@@ -351,7 +351,7 @@ function ReportDialog({
         />
         <div className="grid grid-cols-2 gap-3">
           <label className="block text-sm">
-            <span className="mb-1 block text-slate-600">דחיפות</span>
+            <span className="mb-1 block text-slate-400">דחיפות</span>
             <select value={priority} onChange={(e) => setPriority(e.target.value)} className={inputCls}>
               <option value="high">דחוף</option>
               <option value="medium">רגיל</option>
@@ -359,13 +359,13 @@ function ReportDialog({
             </select>
           </label>
           <label className="block text-sm">
-            <span className="mb-1 block text-slate-600">דד-ליין לתיקון</span>
+            <span className="mb-1 block text-slate-400">דד-ליין לתיקון</span>
             <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} className={inputCls} />
           </label>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <label className="block text-sm">
-            <span className="mb-1 block text-slate-600">איש מקצוע</span>
+            <span className="mb-1 block text-slate-400">איש מקצוע</span>
             <select value={vendorId} onChange={(e) => setVendorId(e.target.value)} className={inputCls}>
               <option value="">בחר איש מקצוע...</option>
               {vendors.map((v) => (
@@ -382,7 +382,7 @@ function ReportDialog({
           <input ref={fileRef} type="file" accept="image/*,.heic,.heif" hidden onChange={(e) => pickFile(e.target.files?.[0] ?? null)} />
           <button
             type="button" onClick={() => fileRef.current?.click()}
-            className="flex items-center gap-1.5 rounded-lg border border-dashed border-slate-300 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50"
+            className="flex items-center gap-1.5 rounded-lg border border-dashed border-white/15 px-3 py-2 text-sm text-slate-400 hover:bg-white/5"
           >
             <ImagePlus size={15} />
             {processing ? 'מעבד תמונה...' : file || task?.issue_image_url ? 'החלף את התמונה' : 'צרף תמונה של התקלה'}
@@ -391,7 +391,7 @@ function ReportDialog({
             <img
               src={file ? URL.createObjectURL(file) : task!.issue_image_url!}
               alt="תצוגה מקדימה"
-              className="h-16 w-16 rounded-lg border border-slate-200 object-cover"
+              className="h-16 w-16 rounded-lg border border-white/10 object-cover"
             />
           )}
         </div>
@@ -439,30 +439,30 @@ function CloseDialog({ task, onClose, onSaved }: { task: Task; onClose: () => vo
     <Modal title={`סגירת קריאה — ${task.title}`} onClose={onClose}>
       <form onSubmit={save} className="space-y-3">
         <label className="block text-sm">
-          <span className="mb-1 block text-slate-600">עלות תיקון (₪)</span>
+          <span className="mb-1 block text-slate-400">עלות תיקון (₪)</span>
           <input
             type="number" min="0" step="0.01" value={cost} onChange={(e) => setCost(e.target.value)}
             placeholder="הזן 0 אם ללא עלות" className={inputCls} dir="ltr"
           />
         </label>
         <label className="block text-sm">
-          <span className="mb-1 block text-slate-600">הערות סיכום (רשות)</span>
+          <span className="mb-1 block text-slate-400">הערות סיכום (רשות)</span>
           <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className={inputCls} />
         </label>
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-          <label className="flex cursor-pointer items-center gap-2 text-sm font-medium text-slate-700">
+        <div className="rounded-xl border border-white/10 bg-white/5 p-3">
+          <label className="flex cursor-pointer items-center gap-2 text-sm font-medium text-slate-300">
             <input
               type="checkbox"
               checked={hasWarranty}
               onChange={(e) => setHasWarranty(e.target.checked)}
               className="h-4 w-4 accent-emerald-600"
             />
-            <ShieldCheck size={16} className="text-emerald-600" />
+            <ShieldCheck size={16} className="text-emerald-400" />
             קיבלתי אחריות על התיקון
           </label>
           {hasWarranty && (
             <label className="mt-2 block text-sm">
-              <span className="mb-1 block text-slate-600">אחריות עד</span>
+              <span className="mb-1 block text-slate-400">אחריות עד</span>
               <input
                 type="date"
                 required
@@ -491,7 +491,7 @@ export function BranchBadge({ name, index = 0 }: { name: string; index?: number 
 export function AreaBadge({ name }: { name: string }) {
   if (!name) return null
   return (
-    <span className="rounded-full border border-slate-200 bg-white px-2 py-0.5 text-xs font-medium text-slate-500">
+    <span className="rounded-full border border-white/10 bg-slate-900/60 px-2 py-0.5 text-xs font-medium text-slate-500">
       {name}
     </span>
   )
@@ -513,8 +513,8 @@ export function BranchFilter({
             onClick={() => onChange(b.id)}
             className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors ${
               active
-                ? 'bg-slate-900 text-white'
-                : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                ? 'bg-emerald-400 text-emerald-950 shadow-md shadow-emerald-400/25'
+                : 'border border-white/10 bg-slate-900/60 text-slate-400 hover:bg-white/5'
             }`}
           >
             {b.name}
@@ -531,7 +531,7 @@ export function BranchSelect({ value, onChange }: { value: string; onChange: (id
   const options = businesses.filter((b) => b.active)
   return (
     <label className="block text-sm">
-      <span className="mb-1 block text-slate-600">עסק</span>
+      <span className="mb-1 block text-slate-400">עסק</span>
       <div className="flex flex-wrap gap-2">
         {options.map((b) => (
           <button
@@ -540,8 +540,8 @@ export function BranchSelect({ value, onChange }: { value: string; onChange: (id
             onClick={() => onChange(b.id)}
             className={`min-w-[30%] flex-1 rounded-lg border py-2 text-sm font-medium transition-colors ${
               value === b.id
-                ? 'border-emerald-600 bg-emerald-50 text-emerald-700'
-                : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                ? 'border-emerald-600 bg-emerald-500/10 text-emerald-300'
+                : 'border-white/10 bg-slate-900/60 text-slate-400 hover:bg-white/5'
             }`}
           >
             {b.name}
@@ -559,7 +559,7 @@ export function AssigneeSelect({
   const { people } = useOrg()
   return (
     <label className="block text-sm">
-      <span className="mb-1 block text-slate-600">אחראי ראשי</span>
+      <span className="mb-1 block text-slate-400">אחראי ראשי</span>
       <select value={value} onChange={(e) => onChange(e.target.value)} className={inputCls}>
         <option value="">ללא אחראי</option>
         {legacyName && !people.some((p) => p.full_name === legacyName) && (
@@ -592,7 +592,7 @@ export function AreaSelect({
   const options = areas.filter((a) => a.active && (!a.business_id || a.business_id === businessId))
   return (
     <label className="block text-sm">
-      <span className="mb-1 block text-slate-600">אזור (רשות)</span>
+      <span className="mb-1 block text-slate-400">אזור (רשות)</span>
       <select value={value} onChange={(e) => onChange(e.target.value)} className={inputCls}>
         <option value="">ללא אזור</option>
         {options.map((a) => (
@@ -605,14 +605,14 @@ export function AreaSelect({
 
 export function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/40 p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm" onClick={onClose}>
       <div
-        className="max-h-[88vh] w-full max-w-md overflow-y-auto rounded-3xl bg-white p-5 shadow-2xl"
+        className="max-h-[88vh] w-full max-w-md overflow-y-auto rounded-3xl bg-slate-900/60 p-5 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="font-bold text-slate-900">{title}</h3>
-          <button onClick={onClose} className="rounded-lg p-1 text-slate-400 hover:bg-slate-100">
+          <h3 className="font-bold text-slate-100">{title}</h3>
+          <button onClick={onClose} className="rounded-lg p-1 text-slate-400 hover:bg-white/10">
             <X size={18} />
           </button>
         </div>
@@ -625,7 +625,7 @@ export function Modal({ title, onClose, children }: { title: string; onClose: ()
 export function DialogButtons({ busy, onCancel, submitLabel }: { busy: boolean; onCancel: () => void; submitLabel: string }) {
   return (
     <div className="flex justify-end gap-2 pt-2">
-      <button type="button" onClick={onCancel} className="rounded-lg px-4 py-2 text-sm text-slate-600 hover:bg-slate-100">
+      <button type="button" onClick={onCancel} className="rounded-lg px-4 py-2 text-sm text-slate-400 hover:bg-white/10">
         ביטול
       </button>
       <button
@@ -639,4 +639,4 @@ export function DialogButtons({ busy, onCancel, submitLabel }: { busy: boolean; 
 }
 
 export const inputCls =
-  'w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none bg-white'
+  'w-full rounded-lg border border-white/15 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none bg-slate-900/60'
