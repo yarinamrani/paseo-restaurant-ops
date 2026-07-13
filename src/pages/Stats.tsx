@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { format } from 'date-fns'
 import { he } from 'date-fns/locale'
 import { TrendingUp, Wrench, ShieldCheck } from 'lucide-react'
-import { supabase, badgeColorFor, BAR_PALETTE, type Task, type Vendor } from '../lib/supabase'
+import { supabase, badgeColorFor, BAR_PALETTE, isOpenStatus, type Task, type Vendor } from '../lib/supabase'
 import { useOrg } from '../lib/org'
 
 export default function StatsPage() {
@@ -14,7 +14,7 @@ export default function StatsPage() {
 
   useEffect(() => {
     Promise.all([
-      supabase.from('tasks').select('*'),
+      supabase.from('tasks').select('*').is('deleted_at', null),
       supabase.from('vendors').select('*'),
     ]).then(([t, v]) => {
       setTasks((t.data as Task[]) ?? [])
@@ -54,7 +54,7 @@ export default function StatsPage() {
     id: b.id,
     name: b.name,
     idx: i,
-    count: tasks.filter((t) => t.status === 'open' && t.business_id === b.id).length,
+    count: tasks.filter((t) => isOpenStatus(t.status) && t.business_id === b.id).length,
   }))
 
   const activeWarranties = done.filter(

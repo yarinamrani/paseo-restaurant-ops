@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { format } from 'date-fns'
 import { he } from 'date-fns/locale'
 import { Plus, CheckCircle2, Circle, Clock, Pencil, Repeat, Trash2, Pause, Play, ImagePlus } from 'lucide-react'
-import { supabase, type AdminTask, type RecurringTask } from '../lib/supabase'
+import { supabase, isOpenStatus, statusLabel, statusCls, type AdminTask, type RecurringTask } from '../lib/supabase'
+import ItemDetail from '../components/ItemDetail'
 import { prepareImage } from '../lib/images'
 import { Modal, DialogButtons, inputCls, BranchBadge, AreaBadge, BranchFilter, BranchSelect, AreaSelect, AssigneeSelect, resolveAssignee } from './Faults'
 import { useOrg } from '../lib/org'
@@ -15,6 +16,7 @@ export default function TasksPage() {
   const [addOpen, setAddOpen] = useState(false)
   const [editing, setEditing] = useState<AdminTask | null>(null)
   const [recurringOpen, setRecurringOpen] = useState(false)
+  const [detail, setDetail] = useState<AdminTask | null>(null)
   const [myId, setMyId] = useState<string | null>(null)
 
   useEffect(() => {
@@ -22,7 +24,7 @@ export default function TasksPage() {
   }, [])
 
   async function load() {
-    const { data } = await supabase.from('admin_tasks').select('*').order('deadline', { ascending: true })
+    const { data } = await supabase.from('admin_tasks').select('*').is('deleted_at', null).order('deadline', { ascending: true })
     setTasks((data as AdminTask[]) ?? [])
   }
 
@@ -58,8 +60,8 @@ export default function TasksPage() {
       : assigneeFilter === '__mine'
         ? byBranch.filter(isMine)
         : byBranch.filter((t) => t.assignee_name?.trim() === assigneeFilter)
-  const open = filtered.filter((t) => t.status === 'open')
-  const done = filtered.filter((t) => t.status === 'done')
+  const open = filtered.filter((t) => isOpenStatus(t.status))
+  const done = filtered.filter((t) => !isOpenStatus(t.status))
 
   return (
     <div className="space-y-4">
@@ -87,7 +89,7 @@ export default function TasksPage() {
         </div>
       </div>
 
-      <BranchFilter value={branchFilter} onChange={setBranchFilter} counts={tasks.filter((t) => t.status === 'open')} />
+      <BranchFilter value={branchFilter} onChange={setBranchFilter} counts={tasks.filter((t) => isOpenStatus(t.status))} />
 
       {(assignees.length > 0 || myId) && (
         <div className="flex flex-wrap items-center gap-1.5">
@@ -135,9 +137,15 @@ export default function TasksPage() {
                 </button>
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className={`font-medium text-slate-900 ${t.status === 'done' ? 'line-through' : ''}`}>{t.title}</span>
+                    <span
+                      onClick={() => setDetail(t)}
+                      className={`cursor-pointer font-medium text-slate-900 hover:underline ${t.status === 'done' ? 'line-through' : ''}`}
+                    >{t.title}</span>
                     <BranchBadge name={bizName(t.business_id, t.branch)} />
                     <AreaBadge name={areaName(t.area_id)} />
+                    {!['open', 'done'].includes(t.status) && (
+                      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusCls(t.status)}`}>{statusLabel(t.status)}</span>
+                    )}
                     {t.priority === 'high' && t.status === 'open' && (
                       <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">דחוף</span>
                     )}
@@ -183,6 +191,10 @@ export default function TasksPage() {
       )}
 
       {recurringOpen && <RecurringModal onClose={() => { setRecurringOpen(false); load() }} />}
+
+      {detail && (
+        <ItemDetail kind="task" item={detail} onClose={() => setDetail(null)} onChanged={load} />
+      )}
     </div>
   )
 }

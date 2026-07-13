@@ -1,8 +1,9 @@
-import { useState } from 'react'
-import { Plus, Check, Pencil, Eye, EyeOff, Building2, MapPin } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { format } from 'date-fns'
+import { Plus, Check, Pencil, Eye, EyeOff, Building2, MapPin, Trash2, RotateCcw, XCircle } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useOrg } from '../lib/org'
-import { inputCls } from './Faults'
+import { inputCls, BranchBadge } from './Faults'
 
 export default function SettingsPage() {
   const { businesses, areas, reload } = useOrg()
@@ -42,12 +43,96 @@ export default function SettingsPage() {
         onChanged={(msg) => { notify(msg); reload() }}
       />
 
+      <RecycleBin onChanged={notify} />
+
       {toast && (
         <div className="fixed bottom-6 start-1/2 z-50 -translate-x-1/2 rtl:translate-x-1/2 rounded-full bg-slate-900 px-5 py-2.5 text-sm text-white shadow-lg">
           {toast}
         </div>
       )}
     </div>
+  )
+}
+
+type DeletedItem = {
+  kind: 'fault' | 'task'
+  id: string
+  title: string
+  branch: string
+  business_id: string | null
+  deleted_at: string
+}
+
+function RecycleBin({ onChanged }: { onChanged: (msg: string) => void }) {
+  const { bizName } = useOrg()
+  const [items, setItems] = useState<DeletedItem[]>([])
+
+  async function load() {
+    const [f, t] = await Promise.all([
+      supabase.from('tasks').select('id, title, branch, business_id, deleted_at').not('deleted_at', 'is', null),
+      supabase.from('admin_tasks').select('id, title, branch, business_id, deleted_at').not('deleted_at', 'is', null),
+    ])
+    const rows: DeletedItem[] = [
+      ...((f.data ?? []) as Omit<DeletedItem, 'kind'>[]).map((x) => ({ ...x, kind: 'fault' as const })),
+      ...((t.data ?? []) as Omit<DeletedItem, 'kind'>[]).map((x) => ({ ...x, kind: 'task' as const })),
+    ]
+    rows.sort((a, b) => b.deleted_at.localeCompare(a.deleted_at))
+    setItems(rows)
+  }
+
+  useEffect(() => {
+    load()
+  }, [])
+
+  async function restore(item: DeletedItem) {
+    await supabase.from(item.kind === 'fault' ? 'tasks' : 'admin_tasks')
+      .update({ deleted_at: null, deleted_by: null }).eq('id', item.id)
+    onChanged(`"${item.title}" שוחזר`)
+    load()
+  }
+
+  async function purge(item: DeletedItem) {
+    if (!confirm(`למחוק את "${item.title}" לצמיתות? אי אפשר לשחזר אחרי זה.`)) return
+    await supabase.from(item.kind === 'fault' ? 'tasks' : 'admin_tasks').delete().eq('id', item.id)
+    onChanged('נמחק לצמיתות')
+    load()
+  }
+
+  return (
+    <section className="rounded-2xl border border-slate-200 bg-white p-4">
+      <h3 className="mb-1 flex items-center gap-1.5 text-sm font-bold text-slate-600">
+        <Trash2 size={15} />
+        סל מחזור ({items.length})
+      </h3>
+      <p className="mb-3 text-xs text-slate-400">פריטים שנמחקו. אפשר לשחזר אותם או למחוק לצמיתות.</p>
+      {items.length === 0 ? (
+        <p className="text-sm text-slate-400">הסל ריק 🗑️</p>
+      ) : (
+        <div className="space-y-1.5">
+          {items.map((item) => (
+            <div key={item.kind + item.id} className="flex items-center justify-between gap-2 rounded-xl border border-slate-100 px-3 py-2">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="text-sm font-medium text-slate-700">{item.title}</span>
+                  <BranchBadge name={bizName(item.business_id, item.branch)} />
+                  <span className="text-[11px] text-slate-400">{item.kind === 'fault' ? 'תקלה' : 'משימה'}</span>
+                </div>
+                <p className="text-[11px] text-slate-400">נמחק {format(new Date(item.deleted_at), 'd.M.yyyy HH:mm')}</p>
+              </div>
+              <div className="flex shrink-0 gap-1">
+                <button onClick={() => restore(item)} title="שחזר" className="flex items-center gap-1 rounded-lg border border-emerald-200 px-2.5 py-1.5 text-xs text-emerald-700 hover:bg-emerald-50">
+                  <RotateCcw size={13} />
+                  שחזר
+                </button>
+                <button onClick={() => purge(item)} title="מחק לצמיתות" className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600">
+                  <XCircle size={15} />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
   )
 }
 

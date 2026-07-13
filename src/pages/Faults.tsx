@@ -4,7 +4,8 @@ import { he } from 'date-fns/locale'
 import {
   Plus, Phone, CheckCircle2, Clock, AlertTriangle, ImagePlus, X, History, ShieldCheck, Pencil,
 } from 'lucide-react'
-import { supabase, badgeColorFor, type Task, type Vendor } from '../lib/supabase'
+import { supabase, badgeColorFor, isOpenStatus, statusLabel, statusCls, type Task, type Vendor } from '../lib/supabase'
+import ItemDetail from '../components/ItemDetail'
 import { prepareImage } from '../lib/images'
 import { useOrg } from '../lib/org'
 
@@ -23,6 +24,7 @@ export default function FaultsPage() {
   const [reportOpen, setReportOpen] = useState(false)
   const [editing, setEditing] = useState<Task | null>(null)
   const [closing, setClosing] = useState<Task | null>(null)
+  const [detail, setDetail] = useState<Task | null>(null)
   const [toast, setToast] = useState<string | null>(null)
 
   function notify(msg: string) {
@@ -32,7 +34,7 @@ export default function FaultsPage() {
 
   async function load() {
     const [t, v] = await Promise.all([
-      supabase.from('tasks').select('*').order('created_at', { ascending: false }),
+      supabase.from('tasks').select('*').is('deleted_at', null).order('created_at', { ascending: false }),
       supabase.from('vendors').select('*').order('profession'),
     ])
     setTasks((t.data as Task[]) ?? [])
@@ -44,8 +46,8 @@ export default function FaultsPage() {
   }, [])
 
   const filtered = branchFilter === 'הכל' ? tasks : tasks.filter((t) => t.business_id === branchFilter)
-  const open = filtered.filter((t) => t.status === 'open')
-  const done = filtered.filter((t) => t.status === 'done')
+  const open = filtered.filter((t) => isOpenStatus(t.status))
+  const done = filtered.filter((t) => !isOpenStatus(t.status))
   const totalCost = done.reduce((s, t) => s + (t.cost ?? 0), 0)
 
   return (
@@ -66,7 +68,7 @@ export default function FaultsPage() {
         </button>
       </div>
 
-      <BranchFilter value={branchFilter} onChange={setBranchFilter} counts={tasks.filter((t) => t.status === 'open')} />
+      <BranchFilter value={branchFilter} onChange={setBranchFilter} counts={tasks.filter((t) => isOpenStatus(t.status))} />
 
       {open.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-slate-300 bg-white py-12 text-center text-slate-500">
@@ -75,7 +77,7 @@ export default function FaultsPage() {
       ) : (
         <div className="space-y-3">
           {open.map((t) => (
-            <FaultCard key={t.id} task={t} vendors={vendors} onClose={() => setClosing(t)} onEdit={() => setEditing(t)} />
+            <FaultCard key={t.id} task={t} vendors={vendors} onClose={() => setClosing(t)} onEdit={() => setEditing(t)} onOpen={() => setDetail(t)} />
           ))}
         </div>
       )}
@@ -142,6 +144,15 @@ export default function FaultsPage() {
         />
       )}
 
+      {detail && (
+        <ItemDetail
+          kind="fault"
+          item={detail}
+          onClose={() => setDetail(null)}
+          onChanged={load}
+        />
+      )}
+
       {closing && (
         <CloseDialog
           task={closing}
@@ -164,8 +175,8 @@ export default function FaultsPage() {
 }
 
 function FaultCard({
-  task, vendors, onClose, onEdit,
-}: { task: Task; vendors: Vendor[]; onClose: () => void; onEdit: () => void }) {
+  task, vendors, onClose, onEdit, onOpen,
+}: { task: Task; vendors: Vendor[]; onClose: () => void; onEdit: () => void; onOpen: () => void }) {
   const { bizName, areaName } = useOrg()
   const vendor = vendors.find((v) => v.id === task.vendor_id)
   const overdue = task.due_date && new Date(task.due_date) < new Date()
@@ -176,9 +187,12 @@ function FaultCard({
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="font-semibold text-slate-900">{task.title}</h3>
+            <h3 onClick={onOpen} className="cursor-pointer font-semibold text-slate-900 hover:underline">{task.title}</h3>
             <BranchBadge name={bizName(task.business_id, task.branch)} />
             <AreaBadge name={areaName(task.area_id)} />
+            {task.status !== 'open' && (
+              <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusCls(task.status)}`}>{statusLabel(task.status)}</span>
+            )}
             <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${pr.cls}`}>{pr.label}</span>
             {overdue && (
               <span className="flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">

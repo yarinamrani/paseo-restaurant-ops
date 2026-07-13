@@ -58,6 +58,43 @@ export function badgeColorFor(name: string, index = 0): string {
   return branchColors[name] ?? BADGE_PALETTE[index % BADGE_PALETTE.length]
 }
 
+export const ITEM_STATUSES = [
+  { value: 'open', label: 'פתוח', cls: 'bg-slate-100 text-slate-600' },
+  { value: 'in_progress', label: 'בטיפול', cls: 'bg-blue-100 text-blue-700' },
+  { value: 'waiting_supplier', label: 'ממתין לספק/טכנאי', cls: 'bg-amber-100 text-amber-700' },
+  { value: 'waiting_approval', label: 'ממתין לאישור', cls: 'bg-purple-100 text-purple-700' },
+  { value: 'on_hold', label: 'מושהה', cls: 'bg-slate-200 text-slate-500' },
+  { value: 'done', label: 'הושלם', cls: 'bg-emerald-100 text-emerald-700' },
+  { value: 'cancelled', label: 'בוטל', cls: 'bg-rose-100 text-rose-600' },
+] as const
+
+export const statusLabel = (s: string) => ITEM_STATUSES.find((x) => x.value === s)?.label ?? s
+export const statusCls = (s: string) => ITEM_STATUSES.find((x) => x.value === s)?.cls ?? 'bg-slate-100 text-slate-600'
+export const isOpenStatus = (s: string) => s !== 'done' && s !== 'cancelled'
+
+export type ItemComment = {
+  id: string
+  item_kind: 'fault' | 'task'
+  item_id: string
+  user_id: string | null
+  user_name: string | null
+  body: string
+  created_at: string
+}
+
+export type ItemActivity = {
+  id: number
+  item_kind: 'fault' | 'task'
+  item_id: string
+  user_id: string | null
+  user_name: string | null
+  action: string
+  field: string | null
+  old_value: string | null
+  new_value: string | null
+  created_at: string
+}
+
 export type Task = {
   id: string
   title: string
@@ -69,12 +106,13 @@ export type Task = {
   priority: 'low' | 'medium' | 'high'
   issue_image_url: string | null
   cost: number | null
-  status: 'open' | 'done'
+  status: string
   branch: string
   business_id: string | null
   area_id: string | null
   resolution_notes: string | null
   warranty_until: string | null
+  deleted_at: string | null
   completed_at: string | null
   created_by: string | null
   created_at: string
@@ -103,11 +141,12 @@ export type AdminTask = {
   assignee_user_id: string | null
   deadline: string | null
   priority: 'low' | 'medium' | 'high'
-  status: 'open' | 'done'
+  status: string
   branch: string
   business_id: string | null
   area_id: string | null
   image_url: string | null
+  deleted_at: string | null
   created_by: string | null
   completed_at: string | null
   created_at: string
