@@ -2,7 +2,7 @@ import { format } from 'date-fns'
 import { Clock } from 'lucide-react'
 import { ITEM_STATUSES, type AdminTask } from '../lib/supabase'
 import { useOrg } from '../lib/org'
-import { BranchBadge } from '../pages/Faults'
+import { BranchBadge, priorityBar } from '../pages/Faults'
 
 export default function KanbanView({
   tasks, onOpen, onStatusChange,
@@ -40,7 +40,7 @@ export default function KanbanView({
                   draggable
                   onDragStart={(e) => e.dataTransfer.setData('text/plain', t.id)}
                   onClick={() => onOpen(t)}
-                  className="cursor-pointer rounded-xl border border-slate-200 bg-white p-3 shadow-sm hover:border-emerald-300"
+                  className={`cursor-pointer rounded-xl border border-slate-200/80 border-s-4 ${t.status === 'done' ? 'border-s-emerald-300' : (priorityBar[t.priority] ?? priorityBar.medium)} bg-white p-3 shadow-sm transition-shadow hover:shadow-md`}
                 >
                   <p className={`text-sm font-medium text-slate-900 ${t.status === 'done' ? 'line-through opacity-60' : ''}`}>
                     {t.title}

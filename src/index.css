@@ -9,7 +9,12 @@ body {
   line-height: 1.7;
   letter-spacing: normal;
   word-spacing: 0.05em;
-  background-color: #f8fafc;
+  background:
+    radial-gradient(1200px 500px at 85% -10%, rgba(16, 185, 129, 0.08), transparent 60%),
+    radial-gradient(900px 400px at 10% 0%, rgba(20, 184, 166, 0.06), transparent 55%),
+    linear-gradient(180deg, #eef2f6 0%, #f5f7fa 40%, #f8fafc 100%);
+  background-attachment: fixed;
+  min-height: 100vh;
 }
 
 /* Numbers, phones — keep LTR inside RTL text */

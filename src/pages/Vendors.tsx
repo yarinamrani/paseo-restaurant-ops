@@ -59,7 +59,7 @@ export default function VendorsPage() {
         </div>
         <button
           onClick={() => setAddOpen(true)}
-          className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
+          className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg bg-gradient-to-l from-emerald-600 to-teal-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-emerald-600/25 transition-all hover:from-emerald-500 hover:to-teal-500"
         >
           <Plus size={16} />
           הוסף מקצוע

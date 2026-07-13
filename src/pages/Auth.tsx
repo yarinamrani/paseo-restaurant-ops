@@ -36,10 +36,10 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-emerald-50 to-slate-50 px-4">
-      <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-emerald-700 via-teal-700 to-emerald-900 px-4">
+      <div className="w-full max-w-sm rounded-3xl bg-white p-8 shadow-2xl">
         <div className="mb-6 flex flex-col items-center gap-2 text-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-600 text-white">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-600/30">
             <UtensilsCrossed size={24} />
           </div>
           <h1 className="text-xl font-bold text-slate-900">Paseo Ops</h1>
@@ -93,7 +93,7 @@ export default function AuthPage() {
           {error && <p className="text-sm text-red-600">{error}</p>}
           <button
             disabled={busy}
-            className="w-full rounded-lg bg-emerald-600 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-50"
+            className="w-full rounded-xl bg-gradient-to-l from-emerald-600 to-teal-600 py-2.5 text-sm font-semibold text-white shadow-md shadow-emerald-600/25 transition-all hover:from-emerald-500 hover:to-teal-500 disabled:opacity-50"
           >
             {busy ? 'רק רגע...' : mode === 'signin' ? 'התחבר' : 'הירשם'}
           </button>

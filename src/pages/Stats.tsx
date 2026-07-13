@@ -127,15 +127,15 @@ export default function StatsPage() {
       {/* KPI row */}
       <div className="grid grid-cols-3 gap-3">
         <div className={`rounded-2xl border p-4 ${overdueCount > 0 ? 'border-red-200 bg-red-50' : 'border-slate-200 bg-white'}`}>
-          <p className="flex items-center gap-1 text-xs text-slate-500"><AlertTriangle size={12} />באיחור</p>
+          <p className="flex items-center gap-1 text-xs text-slate-500"><AlertTriangle size={12} className="text-red-400" />באיחור</p>
           <p className={`mt-1 text-xl font-bold ltr-num ${overdueCount > 0 ? 'text-red-600' : 'text-slate-900'}`}>{overdueCount}</p>
         </div>
         <div className="rounded-2xl border border-slate-200 bg-white p-4">
-          <p className="flex items-center gap-1 text-xs text-slate-500"><Timer size={12} />זמן טיפול ממוצע בתקלה</p>
+          <p className="flex items-center gap-1 text-xs text-slate-500"><Timer size={12} className="text-sky-500" />זמן טיפול ממוצע בתקלה</p>
           <p className="mt-1 text-xl font-bold text-slate-900 ltr-num">{avgResolutionDays === null ? '—' : avgResolutionDays < 1 ? '<1 יום' : Math.round(avgResolutionDays) + ' ימים'}</p>
         </div>
         <div className="rounded-2xl border border-slate-200 bg-white p-4">
-          <p className="flex items-center gap-1 text-xs text-slate-500"><Target size={12} />עמידה בזמנים</p>
+          <p className="flex items-center gap-1 text-xs text-slate-500"><Target size={12} className="text-violet-500" />עמידה בזמנים</p>
           <p className="mt-1 text-xl font-bold text-slate-900 ltr-num">{onTimePct === null ? '—' : onTimePct + '%'}</p>
         </div>
       </div>

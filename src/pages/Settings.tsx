@@ -250,7 +250,7 @@ function ManagedList({
         <input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder={placeholder} className={inputCls} />
         <button
           disabled={busy || !newName.trim()}
-          className="flex shrink-0 items-center gap-1 whitespace-nowrap rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-40"
+          className="flex shrink-0 items-center gap-1 whitespace-nowrap rounded-lg bg-gradient-to-l from-emerald-600 to-teal-600 px-3 py-2 text-sm font-semibold text-white shadow-md shadow-emerald-600/25 transition-all hover:from-emerald-500 hover:to-teal-500 disabled:opacity-40"
         >
           <Plus size={15} />
           הוסף

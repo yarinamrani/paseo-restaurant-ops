@@ -9,6 +9,12 @@ import ItemDetail from '../components/ItemDetail'
 import { prepareImage } from '../lib/images'
 import { useOrg } from '../lib/org'
 
+export const priorityBar: Record<string, string> = {
+  high: 'border-s-red-400',
+  medium: 'border-s-amber-300',
+  low: 'border-s-slate-300',
+}
+
 const priorityLabels: Record<string, { label: string; cls: string }> = {
   high: { label: 'דחוף', cls: 'bg-red-100 text-red-700' },
   medium: { label: 'רגיל', cls: 'bg-amber-100 text-amber-700' },
@@ -61,7 +67,7 @@ export default function FaultsPage() {
         </div>
         <button
           onClick={() => setReportOpen(true)}
-          className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
+          className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg bg-gradient-to-l from-emerald-600 to-teal-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-emerald-600/25 transition-all hover:from-emerald-500 hover:to-teal-500"
         >
           <Plus size={16} />
           דיווח על תקלה
@@ -183,7 +189,7 @@ function FaultCard({
   const pr = priorityLabels[task.priority] ?? priorityLabels.medium
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+    <div className={`rounded-2xl border border-slate-200/80 border-s-4 ${priorityBar[task.priority] ?? priorityBar.medium} bg-white p-4 shadow-sm transition-shadow hover:shadow-md`}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
@@ -209,7 +215,14 @@ function FaultCard({
                 דד-ליין: {format(new Date(task.due_date), 'd בMMMM', { locale: he })}
               </span>
             )}
-            {task.assignee_name && <span>אחראי על ביצוע: {task.assignee_name}</span>}
+            {task.assignee_name && (
+              <span className="flex items-center gap-1">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 text-[10px] font-bold text-white">
+                  {task.assignee_name.trim()[0]}
+                </span>
+                {task.assignee_name}
+              </span>
+            )}
             {vendor && (
               <span className="flex items-center gap-1.5">
                 {vendor.profession}
@@ -594,7 +607,7 @@ export function Modal({ title, onClose, children }: { title: string; onClose: ()
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/40 p-4" onClick={onClose}>
       <div
-        className="max-h-[88vh] w-full max-w-md overflow-y-auto rounded-2xl bg-white p-5 shadow-xl"
+        className="max-h-[88vh] w-full max-w-md overflow-y-auto rounded-3xl bg-white p-5 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4 flex items-center justify-between">
@@ -617,7 +630,7 @@ export function DialogButtons({ busy, onCancel, submitLabel }: { busy: boolean; 
       </button>
       <button
         disabled={busy}
-        className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-50"
+        className="rounded-lg bg-gradient-to-l from-emerald-600 to-teal-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-emerald-600/25 transition-all hover:from-emerald-500 hover:to-teal-500 disabled:opacity-50"
       >
         {busy ? 'שומר...' : submitLabel}
       </button>

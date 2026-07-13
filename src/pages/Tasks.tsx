@@ -7,7 +7,7 @@ import ItemDetail from '../components/ItemDetail'
 import KanbanView from '../components/KanbanView'
 import CalendarView from '../components/CalendarView'
 import { prepareImage } from '../lib/images'
-import { Modal, DialogButtons, inputCls, BranchBadge, AreaBadge, BranchFilter, BranchSelect, AreaSelect, AssigneeSelect, resolveAssignee } from './Faults'
+import { Modal, DialogButtons, inputCls, BranchBadge, AreaBadge, BranchFilter, BranchSelect, AreaSelect, AssigneeSelect, resolveAssignee, priorityBar } from './Faults'
 import { useOrg } from '../lib/org'
 
 export default function TasksPage() {
@@ -98,7 +98,7 @@ export default function TasksPage() {
           </button>
           <button
             onClick={() => setAddOpen(true)}
-            className="flex items-center gap-1.5 whitespace-nowrap rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
+            className="flex items-center gap-1.5 whitespace-nowrap rounded-lg bg-gradient-to-l from-emerald-600 to-teal-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-emerald-600/25 transition-all hover:from-emerald-500 hover:to-teal-500"
           >
             <Plus size={16} />
             משימה חדשה
@@ -170,7 +170,9 @@ export default function TasksPage() {
             return (
               <div
                 key={t.id}
-                className={`flex items-start gap-3 rounded-xl border border-slate-200 bg-white p-4 ${t.status === 'done' ? 'opacity-60' : ''}`}
+                className={`flex items-start gap-3 rounded-xl border border-slate-200/80 border-s-4 bg-white p-4 shadow-sm transition-shadow hover:shadow-md ${
+                  t.status === 'done' ? 'border-s-emerald-300 opacity-60' : (priorityBar[t.priority] ?? priorityBar.medium)
+                }`}
               >
                 <button onClick={() => toggle(t)} className="mt-0.5 text-emerald-600">
                   {t.status === 'done' ? <CheckCircle2 size={20} /> : <Circle size={20} className="text-slate-300 hover:text-emerald-500" />}
@@ -201,7 +203,14 @@ export default function TasksPage() {
                         {format(new Date(t.deadline), 'EEEE, d בMMMM', { locale: he })}
                       </span>
                     )}
-                    {t.assignee_name && <span>באחריות {t.assignee_name}</span>}
+                    {t.assignee_name && (
+                      <span className="flex items-center gap-1">
+                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 text-[10px] font-bold text-white">
+                          {t.assignee_name.trim()[0]}
+                        </span>
+                        {t.assignee_name}
+                      </span>
+                    )}
                   </div>
                 </div>
                 {t.image_url && (
