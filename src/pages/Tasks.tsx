@@ -143,7 +143,7 @@ export default function TasksPage() {
       <div className="flex items-center gap-1">
         {([
           { v: 'list' as const, icon: List, label: 'רשימה' },
-          { v: 'kanban' as const, icon: SquareKanban, label: 'קנבן' },
+          { v: 'kanban' as const, icon: SquareKanban, label: 'סטטוסים' },
           { v: 'calendar' as const, icon: CalendarDays, label: 'לוח שנה' },
         ]).map(({ v, icon: Icon, label }) => (
           <button
