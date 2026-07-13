@@ -42,6 +42,10 @@
 - דשבורד: KPI (באיחור / זמן טיפול ממוצע / % עמידה בזמנים), עומס פתוח לפי אחראי, ייצוא CSV (עברית, נפתח באקסל)
 - נדחה: שמירת פילטרים אישיים, דוח תקלות חוזרות/ציוד
 
+## אבטחה — יומן תיקונים
+- 2026-07-14: **הוקשה הפרדת עסקים (Sprint 1 / משימה 1).** `has_business_access(null)` החזיר `true` = שורה ללא business_id נראתה חוצת-עסקים. תוקן: null→deny + CHECK constraints (NOT VALID) על tasks/admin_tasks/recurring_tasks המונעים יצירת פריט ללא עסק. אומת חי: null נדחה, שורה תקינה עוברת, גישה רגילה לא נפגעה. ללא שינוי קוד לקוח.
+- פתוח (מ-Audit 2026-07-14): R1 דלי `task-images` ציבורי + listing (קריטי, דורש Signed URLs — רולאאוט דו-שלבי); R3 אין גיבוי/PITR; R4 `task_history` mutable; R5 role ב-membership לא נאכף; R6 RPC חשופות ל-anon; R7 הגדרות Auth.
+
 ## נושאים פתוחים (backlog)
 - קבצים פרטיים + Signed URLs; Push לנייד; Email
 - Severity + דגלי בטיחות לתקלות; Checklist; @אזכורים; חובת סיכום בסגירה
