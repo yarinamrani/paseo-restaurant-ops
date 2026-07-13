@@ -248,7 +248,7 @@ export default function StatsPage() {
               <div key={name} className="flex items-center gap-2">
                 <span className="w-28 shrink-0 truncate text-sm text-slate-300">{name}</span>
                 <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-white/10">
-                  <div className="h-full rounded-full bg-emerald-500" style={{ width: `${(count / openByAssignee[0][1]) * 100}%` }} />
+                  <div className="h-full rounded-full bg-orange-500" style={{ width: `${(count / openByAssignee[0][1]) * 100}%` }} />
                 </div>
                 <span className="w-6 text-end text-sm font-bold text-slate-100 ltr-num">{count}</span>
               </div>
@@ -260,7 +260,7 @@ export default function StatsPage() {
       {/* Active warranties */}
       <section className="rounded-2xl border border-white/10 bg-slate-900/60 p-4">
         <h3 className="mb-3 flex items-center gap-1.5 text-sm font-bold text-slate-500">
-          <ShieldCheck size={15} className="text-emerald-400" />
+          <ShieldCheck size={15} className="text-orange-400" />
           אחריות פעילה ({activeWarranties.length})
         </h3>
         {activeWarranties.length === 0 ? (
@@ -270,7 +270,7 @@ export default function StatsPage() {
             {activeWarranties.map((t) => (
               <div key={t.id} className="flex items-center justify-between gap-2 text-sm">
                 <span className="text-slate-300">{t.title}</span>
-                <span className="shrink-0 text-emerald-300">
+                <span className="shrink-0 text-orange-300">
                   עד {format(new Date(t.warranty_until!), 'd.M.yyyy')}
                 </span>
               </div>

@@ -42,7 +42,7 @@ export default function Layout({ isAdmin = false }: { isAdmin?: boolean }) {
       <header className="sticky top-0 z-20 border-b border-white/10 bg-slate-950/85 backdrop-blur-xl">
         <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-2.5">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-400 to-cyan-500 text-slate-950 shadow-lg shadow-emerald-500/40">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-orange-400 to-red-500 text-slate-950 shadow-lg shadow-orange-500/40">
               <UtensilsCrossed size={18} />
             </div>
             <h1 className="text-base font-bold text-slate-100">Paseo Ops</h1>
@@ -61,7 +61,7 @@ export default function Layout({ isAdmin = false }: { isAdmin?: boolean }) {
               className={({ isActive }) =>
                 `flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
                   isActive
-                    ? 'bg-emerald-400 text-emerald-950 shadow-md shadow-emerald-400/30'
+                    ? 'bg-orange-400 text-orange-950 shadow-md shadow-orange-400/30'
                     : 'text-slate-300 hover:bg-white/10'
                 }`
               }
@@ -90,7 +90,7 @@ export default function Layout({ isAdmin = false }: { isAdmin?: boolean }) {
           <div className="flex justify-center">
             <button
               onClick={() => setCreateOpen(true)}
-              className="animate-fab-glow -mt-5 mb-1.5 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500 text-slate-950 transition-transform active:scale-90"
+              className="animate-fab-glow -mt-5 mb-1.5 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-orange-400 to-red-500 text-slate-950 transition-transform active:scale-90"
               title="יצירה מהירה"
             >
               <Plus size={26} strokeWidth={2.5} />
@@ -126,7 +126,7 @@ export default function Layout({ isAdmin = false }: { isAdmin?: boolean }) {
               </button>
               <button
                 onClick={() => quickCreate('/tasks?new=1')}
-                className="flex flex-col items-center gap-2 rounded-2xl border border-emerald-400/30 bg-emerald-500/10 py-5 text-emerald-300 transition-transform active:scale-95"
+                className="flex flex-col items-center gap-2 rounded-2xl border border-orange-400/30 bg-orange-500/10 py-5 text-orange-300 transition-transform active:scale-95"
               >
                 <ClipboardList size={26} />
                 <span className="text-sm font-semibold">משימה חדשה</span>
@@ -146,13 +146,13 @@ function TabButton({ to, label, icon: Icon }: { to: string; label: string; icon:
       end={to === '/'}
       className={({ isActive }) =>
         `flex flex-col items-center gap-0.5 py-2 text-[10px] font-medium transition-colors ${
-          isActive ? 'text-emerald-300' : 'text-slate-500'
+          isActive ? 'text-orange-300' : 'text-slate-500'
         }`
       }
     >
       {({ isActive }) => (
         <>
-          <span className={`rounded-xl px-3 py-0.5 transition-colors ${isActive ? 'bg-emerald-400/15' : ''}`}>
+          <span className={`rounded-xl px-3 py-0.5 transition-colors ${isActive ? 'bg-orange-400/15' : ''}`}>
             <Icon size={20} />
           </span>
           {label}

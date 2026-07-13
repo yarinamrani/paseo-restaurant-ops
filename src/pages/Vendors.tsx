@@ -59,7 +59,7 @@ export default function VendorsPage() {
         </div>
         <button
           onClick={() => setAddOpen(true)}
-          className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg bg-gradient-to-l from-emerald-600 to-teal-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-emerald-600/25 transition-all hover:from-emerald-500 hover:to-teal-500"
+          className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg bg-gradient-to-l from-orange-600 to-red-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-orange-600/25 transition-all hover:from-orange-500 hover:to-red-500"
         >
           <Plus size={16} />
           הוסף מקצוע
@@ -122,7 +122,7 @@ export default function VendorsPage() {
                       <div className="flex items-center gap-2">
                         <a
                           href={`tel:${v.phone}`}
-                          className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-emerald-600 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
+                          className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-orange-600 py-2 text-sm font-semibold text-white hover:bg-orange-700"
                         >
                           <Phone size={14} />
                           התקשר עכשיו
@@ -139,7 +139,7 @@ export default function VendorsPage() {
                     ) : (
                       <button
                         onClick={() => setEditing(v)}
-                        className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-emerald-400/40 py-2 text-sm font-medium text-emerald-300 hover:bg-emerald-500/10"
+                        className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-orange-400/40 py-2 text-sm font-medium text-orange-300 hover:bg-orange-500/10"
                       >
                         <UserPlus size={14} />
                         הוסף איש קשר

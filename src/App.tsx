@@ -103,7 +103,7 @@ function PendingApproval() {
         <div className="mt-6 flex flex-col gap-2">
           <button
             onClick={() => window.location.reload()}
-            className="flex items-center justify-center gap-1.5 rounded-lg bg-emerald-600 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700"
+            className="flex items-center justify-center gap-1.5 rounded-lg bg-orange-600 py-2.5 text-sm font-semibold text-white hover:bg-orange-700"
           >
             <RefreshCw size={15} />
             בדוק שוב

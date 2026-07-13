@@ -40,7 +40,7 @@ export default function KanbanView({
                   draggable
                   onDragStart={(e) => e.dataTransfer.setData('text/plain', t.id)}
                   onClick={() => onOpen(t)}
-                  className={`cursor-pointer rounded-xl border border-white/10 border-s-4 ${t.status === 'done' ? 'border-s-emerald-500/70' : (priorityBar[t.priority] ?? priorityBar.medium)} bg-slate-900/60 p-3 shadow-sm transition-shadow hover:shadow-md`}
+                  className={`cursor-pointer rounded-xl border border-white/10 border-s-4 ${t.status === 'done' ? 'border-s-orange-500/70' : (priorityBar[t.priority] ?? priorityBar.medium)} bg-slate-900/60 p-3 shadow-sm transition-shadow hover:shadow-md`}
                 >
                   <p className={`text-sm font-medium text-slate-100 ${t.status === 'done' ? 'line-through opacity-60' : ''}`}>
                     {t.title}

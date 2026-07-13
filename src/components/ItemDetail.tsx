@@ -200,7 +200,7 @@ export default function ItemDetail({
           <select
             value={status}
             onChange={(e) => changeStatus(e.target.value)}
-            className="w-full rounded-lg border border-white/15 bg-slate-900/60 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none"
+            className="w-full rounded-lg border border-white/15 bg-slate-900/60 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none"
           >
             {ITEM_STATUSES.filter((s) => !(kind === 'fault' && s.value === 'done')).map((s) => (
               <option key={s.value} value={s.value}>{s.label}</option>
@@ -292,11 +292,11 @@ export default function ItemDetail({
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
               placeholder="כתוב תגובה או עדכון..."
-              className="w-full rounded-lg border border-white/15 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none"
+              className="w-full rounded-lg border border-white/15 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none"
             />
             <button
               disabled={busy || !newComment.trim()}
-              className="shrink-0 rounded-lg bg-emerald-600 px-3 py-2 text-white hover:bg-emerald-700 disabled:opacity-40"
+              className="shrink-0 rounded-lg bg-orange-600 px-3 py-2 text-white hover:bg-orange-700 disabled:opacity-40"
             >
               <Send size={15} className="rtl:-scale-x-100" />
             </button>
@@ -331,7 +331,7 @@ export default function ItemDetail({
             <Trash2 size={14} />
             העבר לסל מחזור
           </button>
-          <button onClick={onClose} className="rounded-lg bg-emerald-400 px-4 py-1.5 text-sm font-semibold text-emerald-950 hover:bg-emerald-300">
+          <button onClick={onClose} className="rounded-lg bg-orange-400 px-4 py-1.5 text-sm font-semibold text-orange-950 hover:bg-orange-300">
             סגור
           </button>
         </div>

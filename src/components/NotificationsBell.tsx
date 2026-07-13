@@ -85,7 +85,7 @@ export default function NotificationsBell() {
           <div className="flex items-center justify-between border-b border-white/5 px-4 py-2.5">
             <span className="text-sm font-bold text-slate-300">התראות</span>
             {unread > 0 && (
-              <button onClick={markAllRead} className="flex items-center gap-1 text-xs text-emerald-300 hover:underline">
+              <button onClick={markAllRead} className="flex items-center gap-1 text-xs text-orange-300 hover:underline">
                 <CheckCheck size={13} />
                 סמן הכל כנקרא
               </button>
@@ -102,7 +102,7 @@ export default function NotificationsBell() {
                 }`}
               >
                 <div className="flex items-start gap-2">
-                  {!n.read_at && <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-emerald-500" />}
+                  {!n.read_at && <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-orange-500" />}
                   <div className="min-w-0">
                     <p className="text-sm font-medium text-slate-200">{n.title}</p>
                     {n.body && <p className="truncate text-xs text-slate-500">{n.body}</p>}

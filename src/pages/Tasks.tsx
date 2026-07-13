@@ -107,7 +107,7 @@ export default function TasksPage() {
           </button>
           <button
             onClick={() => setAddOpen(true)}
-            className="flex items-center gap-1.5 whitespace-nowrap rounded-lg bg-gradient-to-l from-emerald-600 to-teal-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-emerald-600/25 transition-all hover:from-emerald-500 hover:to-teal-500"
+            className="flex items-center gap-1.5 whitespace-nowrap rounded-lg bg-gradient-to-l from-orange-600 to-red-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-orange-600/25 transition-all hover:from-orange-500 hover:to-red-500"
           >
             <Plus size={16} />
             משימה חדשה
@@ -130,7 +130,7 @@ export default function TasksPage() {
               onClick={() => setAssigneeFilter(key)}
               className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
                 assigneeFilter === key
-                  ? 'bg-emerald-600 text-white'
+                  ? 'bg-orange-600 text-white'
                   : 'border border-white/10 bg-slate-900/60 text-slate-400 hover:bg-white/5'
               }`}
             >
@@ -150,7 +150,7 @@ export default function TasksPage() {
             key={v}
             onClick={() => switchView(v)}
             className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
-              view === v ? 'bg-emerald-400 text-emerald-950 shadow-md shadow-emerald-400/25' : 'border border-white/10 bg-slate-900/60 text-slate-400 hover:bg-white/5'
+              view === v ? 'bg-orange-400 text-orange-950 shadow-md shadow-orange-400/25' : 'border border-white/10 bg-slate-900/60 text-slate-400 hover:bg-white/5'
             }`}
           >
             <Icon size={14} />
@@ -167,7 +167,7 @@ export default function TasksPage() {
         <div className="rounded-2xl border border-dashed border-white/15 bg-slate-900/60 py-12 text-center text-slate-500">
           אין משימות עדיין
           <div className="mt-2">
-            <button onClick={() => setAddOpen(true)} className="text-sm font-medium text-emerald-300 hover:underline">
+            <button onClick={() => setAddOpen(true)} className="text-sm font-medium text-orange-300 hover:underline">
               הוסף משימה ראשונה
             </button>
           </div>
@@ -180,11 +180,11 @@ export default function TasksPage() {
               <div
                 key={t.id}
                 className={`flex items-start gap-3 rounded-xl border border-white/10 border-s-4 bg-slate-900/60 p-4 shadow-sm transition-shadow hover:shadow-md ${
-                  t.status === 'done' ? 'border-s-emerald-500/70 opacity-60' : (priorityBar[t.priority] ?? priorityBar.medium)
+                  t.status === 'done' ? 'border-s-orange-500/70 opacity-60' : (priorityBar[t.priority] ?? priorityBar.medium)
                 }`}
               >
-                <button onClick={() => toggle(t)} className="mt-0.5 text-emerald-400">
-                  {t.status === 'done' ? <CheckCircle2 size={20} /> : <Circle size={20} className="text-slate-300 hover:text-emerald-500" />}
+                <button onClick={() => toggle(t)} className="mt-0.5 text-orange-400">
+                  {t.status === 'done' ? <CheckCircle2 size={20} /> : <Circle size={20} className="text-slate-300 hover:text-orange-500" />}
                 </button>
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
@@ -214,7 +214,7 @@ export default function TasksPage() {
                     )}
                     {t.assignee_name && (
                       <span className="flex items-center gap-1">
-                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 text-[10px] font-bold text-white">
+                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-red-600 text-[10px] font-bold text-white">
                           {t.assignee_name.trim()[0]}
                         </span>
                         {t.assignee_name}
@@ -473,7 +473,7 @@ function RecurringModal({ onClose }: { onClose: () => void }) {
       </div>
 
       {adding ? (
-        <form onSubmit={add} className="space-y-3 rounded-xl border border-emerald-400/30 bg-emerald-500/10/40 p-3">
+        <form onSubmit={add} className="space-y-3 rounded-xl border border-orange-400/30 bg-orange-500/10/40 p-3">
           <input required autoFocus value={title} onChange={(e) => setTitle(e.target.value)} placeholder="מה המשימה? (ניקוי מנדפים...)" className={inputCls} />
           <BranchSelect value={bizId} onChange={setBizId} />
           <div className="grid grid-cols-2 gap-3">
@@ -496,7 +496,7 @@ function RecurringModal({ onClose }: { onClose: () => void }) {
       ) : (
         <button
           onClick={() => setAdding(true)}
-          className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-emerald-400/40 py-2 text-sm font-medium text-emerald-300 hover:bg-emerald-500/10"
+          className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-orange-400/40 py-2 text-sm font-medium text-orange-300 hover:bg-orange-500/10"
         >
           <Plus size={15} />
           הוסף משימה חוזרת

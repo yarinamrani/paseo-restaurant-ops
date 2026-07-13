@@ -68,10 +68,10 @@ export default function HomePage() {
   const feed = activity.map((a) => ({ a, line: feedLine(a) })).filter((x) => x.line).slice(0, 8)
 
   const cards = [
-    { label: 'המשימות שלי', value: myOpen, icon: BadgeCheck, glow: 'from-emerald-400/20', text: 'text-emerald-300', to: '/tasks' },
+    { label: 'המשימות שלי', value: myOpen, icon: BadgeCheck, glow: 'from-orange-400/20', text: 'text-orange-300', to: '/tasks' },
     { label: 'באיחור', value: overdue, icon: AlertTriangle, glow: 'from-red-400/20', text: overdue > 0 ? 'text-red-300' : 'text-slate-300', to: '/tasks' },
     { label: 'תקלות פתוחות', value: openFaults.length, icon: Wrench, glow: 'from-amber-400/20', text: 'text-amber-300', to: '/faults' },
-    { label: 'משימות פתוחות', value: openTasks.length, icon: ClipboardList, glow: 'from-cyan-400/20', text: 'text-cyan-300', to: '/tasks' },
+    { label: 'משימות פתוחות', value: openTasks.length, icon: ClipboardList, glow: 'from-orange-400/20', text: 'text-orange-200', to: '/tasks' },
   ]
 
   return (
@@ -110,7 +110,7 @@ export default function HomePage() {
         </button>
         <button
           onClick={() => navigate('/tasks?new=1')}
-          className="flex items-center justify-center gap-2 rounded-2xl border border-emerald-400/30 bg-emerald-500/10 py-3.5 text-sm font-semibold text-emerald-300 transition-transform active:scale-95"
+          className="flex items-center justify-center gap-2 rounded-2xl border border-orange-400/30 bg-orange-500/10 py-3.5 text-sm font-semibold text-orange-300 transition-transform active:scale-95"
         >
           <Plus size={16} />
           משימה חדשה
@@ -120,7 +120,7 @@ export default function HomePage() {
       {/* activity feed */}
       <section className="rounded-2xl border border-white/10 bg-slate-900/60 p-4">
         <h3 className="mb-3 flex items-center gap-1.5 text-sm font-bold text-slate-300">
-          <Activity size={15} className="text-emerald-400" />
+          <Activity size={15} className="text-orange-400" />
           מה קורה עכשיו
         </h3>
         {feed.length === 0 ? (
@@ -129,7 +129,7 @@ export default function HomePage() {
           <div className="space-y-2.5">
             {feed.map(({ a, line }) => (
               <div key={a.id} className="flex items-start gap-2 text-sm">
-                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-400/70" />
+                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-orange-400/70" />
                 <div className="min-w-0">
                   <p className="text-slate-300">{line}</p>
                   <p className="text-[11px] text-slate-500">{format(new Date(a.created_at), 'd.M · HH:mm')}</p>

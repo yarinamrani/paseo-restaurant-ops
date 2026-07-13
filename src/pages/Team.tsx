@@ -11,7 +11,7 @@ type Member = {
 }
 
 const roleLabels: Record<string, { label: string; cls: string }> = {
-  admin: { label: 'מנהל', cls: 'bg-emerald-500/15 text-emerald-300' },
+  admin: { label: 'מנהל', cls: 'bg-orange-500/15 text-orange-300' },
   staff: { label: 'עובד', cls: 'bg-white/10 text-slate-400' },
   pending: { label: 'ממתין לאישור', cls: 'bg-amber-500/15 text-amber-300' },
 }
@@ -104,7 +104,7 @@ export default function TeamPage() {
                 </div>
                 <button
                   onClick={() => setRole(m, 'staff', `${m.full_name || m.email} אושר והצטרף לצוות!`)}
-                  className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg bg-gradient-to-l from-emerald-600 to-teal-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-emerald-600/25 transition-all hover:from-emerald-500 hover:to-teal-500"
+                  className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg bg-gradient-to-l from-orange-600 to-red-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-orange-600/25 transition-all hover:from-orange-500 hover:to-red-500"
                 >
                   <UserCheck size={15} />
                   אשר
@@ -131,7 +131,7 @@ export default function TeamPage() {
                   </div>
                   <p className="truncate text-sm text-slate-500" dir="ltr">{m.email}</p>
                   {m.role === 'admin' ? (
-                    <p className="mt-1.5 text-xs text-emerald-300">גישה לכל העסקים (מנהל מערכת)</p>
+                    <p className="mt-1.5 text-xs text-orange-300">גישה לכל העסקים (מנהל מערכת)</p>
                   ) : (
                     <div className="mt-1.5 flex flex-wrap items-center gap-1">
                       <span className="text-[11px] text-slate-400">עסקים:</span>
@@ -144,7 +144,7 @@ export default function TeamPage() {
                             title={has ? 'הסר גישה' : 'תן גישה'}
                             className={`rounded-full px-2 py-0.5 text-[11px] font-medium transition-colors ${
                               has
-                                ? 'bg-emerald-500/15 text-emerald-300'
+                                ? 'bg-orange-500/15 text-orange-300'
                                 : 'border border-dashed border-white/15 text-slate-400 hover:bg-white/5'
                             }`}
                           >

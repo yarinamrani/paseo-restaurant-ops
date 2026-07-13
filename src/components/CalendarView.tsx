@@ -45,7 +45,7 @@ export default function CalendarView({
           <div
             key={i}
             className={`min-h-16 rounded-lg border p-1 ${
-              day && isSameDay(day, today) ? 'border-emerald-400 bg-emerald-500/10' : 'border-white/5'
+              day && isSameDay(day, today) ? 'border-orange-400 bg-orange-500/10' : 'border-white/5'
             } ${day ? '' : 'border-transparent'}`}
           >
             {day && (
@@ -63,7 +63,7 @@ export default function CalendarView({
                             ? 'bg-white/10 text-slate-400 line-through'
                             : late
                               ? 'bg-red-500/15 text-red-300'
-                              : 'bg-emerald-500/15 text-emerald-300'
+                              : 'bg-orange-500/15 text-orange-300'
                         }`}
                         title={t.title}
                       >

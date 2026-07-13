@@ -39,7 +39,7 @@ export default function AuthPage() {
     <div className="flex min-h-screen items-center justify-center bg-[#070b14] px-4">
       <div className="w-full max-w-sm rounded-3xl border border-white/10 bg-slate-900/80 p-8 shadow-2xl backdrop-blur">
         <div className="mb-6 flex flex-col items-center gap-2 text-center">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-600/30">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-600 to-red-600 text-white shadow-lg shadow-orange-600/30">
             <UtensilsCrossed size={24} />
           </div>
           <h1 className="text-xl font-bold text-slate-100">Paseo Ops</h1>
@@ -49,13 +49,13 @@ export default function AuthPage() {
         <div className="mb-5 grid grid-cols-2 rounded-lg bg-white/10 p-1 text-sm font-medium">
           <button
             onClick={() => setMode('signin')}
-            className={`rounded-md py-1.5 ${mode === 'signin' ? 'bg-emerald-400 text-emerald-950 shadow-sm' : 'text-slate-500'}`}
+            className={`rounded-md py-1.5 ${mode === 'signin' ? 'bg-orange-400 text-orange-950 shadow-sm' : 'text-slate-500'}`}
           >
             התחברות
           </button>
           <button
             onClick={() => setMode('signup')}
-            className={`rounded-md py-1.5 ${mode === 'signup' ? 'bg-emerald-400 text-emerald-950 shadow-sm' : 'text-slate-500'}`}
+            className={`rounded-md py-1.5 ${mode === 'signup' ? 'bg-orange-400 text-orange-950 shadow-sm' : 'text-slate-500'}`}
           >
             הרשמה
           </button>
@@ -68,7 +68,7 @@ export default function AuthPage() {
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               placeholder="שם מלא"
-              className="w-full rounded-lg border border-white/15 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none"
+              className="w-full rounded-lg border border-white/15 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none"
             />
           )}
           <input
@@ -78,7 +78,7 @@ export default function AuthPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="אימייל"
-            className="w-full rounded-lg border border-white/15 px-3 py-2 text-sm placeholder:text-end focus:border-emerald-500 focus:outline-none"
+            className="w-full rounded-lg border border-white/15 px-3 py-2 text-sm placeholder:text-end focus:border-orange-500 focus:outline-none"
           />
           <input
             required
@@ -88,12 +88,12 @@ export default function AuthPage() {
             onChange={(e) => setPassword(e.target.value)}
             placeholder="סיסמה"
             minLength={6}
-            className="w-full rounded-lg border border-white/15 px-3 py-2 text-sm placeholder:text-end focus:border-emerald-500 focus:outline-none"
+            className="w-full rounded-lg border border-white/15 px-3 py-2 text-sm placeholder:text-end focus:border-orange-500 focus:outline-none"
           />
           {error && <p className="text-sm text-red-400">{error}</p>}
           <button
             disabled={busy}
-            className="w-full rounded-xl bg-gradient-to-l from-emerald-600 to-teal-600 py-2.5 text-sm font-semibold text-white shadow-md shadow-emerald-600/25 transition-all hover:from-emerald-500 hover:to-teal-500 disabled:opacity-50"
+            className="w-full rounded-xl bg-gradient-to-l from-orange-600 to-red-600 py-2.5 text-sm font-semibold text-white shadow-md shadow-orange-600/25 transition-all hover:from-orange-500 hover:to-red-500 disabled:opacity-50"
           >
             {busy ? 'רק רגע...' : mode === 'signin' ? 'התחבר' : 'הירשם'}
           </button>

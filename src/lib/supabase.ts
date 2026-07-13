@@ -32,7 +32,7 @@ export type Area = {
 
 const BADGE_PALETTE = [
   'bg-violet-500/15 text-violet-300',
-  'bg-emerald-500/15 text-emerald-300',
+  'bg-orange-500/15 text-orange-300',
   'bg-sky-500/15 text-sky-300',
   'bg-amber-500/15 text-amber-300',
   'bg-rose-500/15 text-rose-300',
@@ -41,7 +41,7 @@ const BADGE_PALETTE = [
 
 export const BAR_PALETTE = [
   'bg-violet-500',
-  'bg-emerald-500',
+  'bg-orange-500',
   'bg-sky-500',
   'bg-amber-500',
   'bg-rose-500',
@@ -64,7 +64,7 @@ export const ITEM_STATUSES = [
   { value: 'waiting_supplier', label: 'ממתין לספק/טכנאי', cls: 'bg-amber-500/15 text-amber-300' },
   { value: 'waiting_approval', label: 'ממתין לאישור', cls: 'bg-purple-500/15 text-purple-300' },
   { value: 'on_hold', label: 'מושהה', cls: 'bg-white/15 text-slate-500' },
-  { value: 'done', label: 'הושלם', cls: 'bg-emerald-500/15 text-emerald-300' },
+  { value: 'done', label: 'הושלם', cls: 'bg-orange-500/15 text-orange-300' },
   { value: 'cancelled', label: 'בוטל', cls: 'bg-rose-500/15 text-rose-400' },
 ] as const
 

@@ -76,7 +76,7 @@ export default function FaultsPage() {
         </div>
         <button
           onClick={() => setReportOpen(true)}
-          className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg bg-gradient-to-l from-emerald-600 to-teal-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-emerald-600/25 transition-all hover:from-emerald-500 hover:to-teal-500"
+          className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg bg-gradient-to-l from-orange-600 to-red-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-orange-600/25 transition-all hover:from-orange-500 hover:to-red-500"
         >
           <Plus size={16} />
           דיווח על תקלה
@@ -114,7 +114,7 @@ export default function FaultsPage() {
               <div key={t.id} className="rounded-xl border border-white/10 bg-slate-900/60 p-4">
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 size={16} className="text-emerald-400" />
+                    <CheckCircle2 size={16} className="text-orange-400" />
                     <span className="font-medium text-slate-300 line-through">{t.title}</span>
                     <BranchBadge name={bizName(t.business_id, t.branch)} />
                   </div>
@@ -122,7 +122,7 @@ export default function FaultsPage() {
                 </div>
                 {t.warranty_until && (
                   new Date(t.warranty_until) >= new Date(new Date().toDateString()) ? (
-                    <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs font-medium text-emerald-300">
+                    <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-orange-500/10 px-2 py-0.5 text-xs font-medium text-orange-300">
                       <ShieldCheck size={12} />
                       אחריות עד {format(new Date(t.warranty_until), 'd בMMMM yyyy', { locale: he })}
                     </span>
@@ -226,7 +226,7 @@ function FaultCard({
             )}
             {task.assignee_name && (
               <span className="flex items-center gap-1">
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 text-[10px] font-bold text-white">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-red-600 text-[10px] font-bold text-white">
                   {task.assignee_name.trim()[0]}
                 </span>
                 {task.assignee_name}
@@ -239,7 +239,7 @@ function FaultCard({
                 {vendor.phone && (
                   <a
                     href={`tel:${vendor.phone}`}
-                    className="flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 font-medium text-emerald-300 hover:bg-emerald-500/15"
+                    className="flex items-center gap-1 rounded-full bg-orange-500/10 px-2 py-0.5 font-medium text-orange-300 hover:bg-orange-500/15"
                   >
                     <Phone size={11} />
                     התקשר עכשיו
@@ -258,7 +258,7 @@ function FaultCard({
       <div className="mt-3 flex items-center justify-between border-t border-white/5 pt-3">
         <button
           onClick={onClose}
-          className="flex items-center gap-1.5 rounded-lg bg-emerald-400 px-3 py-1.5 text-sm font-semibold text-emerald-950 hover:bg-emerald-300"
+          className="flex items-center gap-1.5 rounded-lg bg-orange-400 px-3 py-1.5 text-sm font-semibold text-orange-950 hover:bg-orange-300"
         >
           <CheckCircle2 size={15} />
           סגור קריאה
@@ -464,9 +464,9 @@ function CloseDialog({ task, onClose, onSaved }: { task: Task; onClose: () => vo
               type="checkbox"
               checked={hasWarranty}
               onChange={(e) => setHasWarranty(e.target.checked)}
-              className="h-4 w-4 accent-emerald-600"
+              className="h-4 w-4 accent-orange-600"
             />
-            <ShieldCheck size={16} className="text-emerald-400" />
+            <ShieldCheck size={16} className="text-orange-400" />
             קיבלתי אחריות על התיקון
           </label>
           {hasWarranty && (
@@ -522,7 +522,7 @@ export function BranchFilter({
             onClick={() => onChange(b.id)}
             className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors ${
               active
-                ? 'bg-emerald-400 text-emerald-950 shadow-md shadow-emerald-400/25'
+                ? 'bg-orange-400 text-orange-950 shadow-md shadow-orange-400/25'
                 : 'border border-white/10 bg-slate-900/60 text-slate-400 hover:bg-white/5'
             }`}
           >
@@ -549,7 +549,7 @@ export function BranchSelect({ value, onChange }: { value: string; onChange: (id
             onClick={() => onChange(b.id)}
             className={`min-w-[30%] flex-1 rounded-lg border py-2 text-sm font-medium transition-colors ${
               value === b.id
-                ? 'border-emerald-600 bg-emerald-500/10 text-emerald-300'
+                ? 'border-orange-600 bg-orange-500/10 text-orange-300'
                 : 'border-white/10 bg-slate-900/60 text-slate-400 hover:bg-white/5'
             }`}
           >
@@ -639,7 +639,7 @@ export function DialogButtons({ busy, onCancel, submitLabel }: { busy: boolean; 
       </button>
       <button
         disabled={busy}
-        className="rounded-lg bg-gradient-to-l from-emerald-600 to-teal-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-emerald-600/25 transition-all hover:from-emerald-500 hover:to-teal-500 disabled:opacity-50"
+        className="rounded-lg bg-gradient-to-l from-orange-600 to-red-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-orange-600/25 transition-all hover:from-orange-500 hover:to-red-500 disabled:opacity-50"
       >
         {busy ? 'שומר...' : submitLabel}
       </button>
@@ -648,4 +648,4 @@ export function DialogButtons({ busy, onCancel, submitLabel }: { busy: boolean; 
 }
 
 export const inputCls =
-  'w-full rounded-lg border border-white/15 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none bg-slate-900/60'
+  'w-full rounded-lg border border-white/15 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none bg-slate-900/60'

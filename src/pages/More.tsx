@@ -21,7 +21,7 @@ export default function MorePage({ isAdmin }: { isAdmin: boolean }) {
           onClick={() => navigate(to)}
           className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-slate-900/60 p-4 text-start transition-transform active:scale-[0.98]"
         >
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-300">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-orange-500/15 text-orange-300">
             <Icon size={20} />
           </div>
           <div className="min-w-0 flex-1">

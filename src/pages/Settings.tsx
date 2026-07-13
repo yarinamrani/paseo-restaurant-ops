@@ -120,7 +120,7 @@ function RecycleBin({ onChanged }: { onChanged: (msg: string) => void }) {
                 <p className="text-[11px] text-slate-400">נמחק {format(new Date(item.deleted_at), 'd.M.yyyy HH:mm')}</p>
               </div>
               <div className="flex shrink-0 gap-1">
-                <button onClick={() => restore(item)} title="שחזר" className="flex items-center gap-1 rounded-lg border border-emerald-400/30 px-2.5 py-1.5 text-xs text-emerald-300 hover:bg-emerald-500/10">
+                <button onClick={() => restore(item)} title="שחזר" className="flex items-center gap-1 rounded-lg border border-orange-400/30 px-2.5 py-1.5 text-xs text-orange-300 hover:bg-orange-500/10">
                   <RotateCcw size={13} />
                   שחזר
                 </button>
@@ -222,7 +222,7 @@ function ManagedList({
             )}
             <div className="flex shrink-0 gap-1">
               {editingId === item.id ? (
-                <button onClick={() => rename(item)} title="שמור" className="rounded-lg p-1.5 text-emerald-400 hover:bg-emerald-500/10">
+                <button onClick={() => rename(item)} title="שמור" className="rounded-lg p-1.5 text-orange-400 hover:bg-orange-500/10">
                   <Check size={15} />
                 </button>
               ) : (
@@ -250,7 +250,7 @@ function ManagedList({
         <input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder={placeholder} className={inputCls} />
         <button
           disabled={busy || !newName.trim()}
-          className="flex shrink-0 items-center gap-1 whitespace-nowrap rounded-lg bg-gradient-to-l from-emerald-600 to-teal-600 px-3 py-2 text-sm font-semibold text-white shadow-md shadow-emerald-600/25 transition-all hover:from-emerald-500 hover:to-teal-500 disabled:opacity-40"
+          className="flex shrink-0 items-center gap-1 whitespace-nowrap rounded-lg bg-gradient-to-l from-orange-600 to-red-600 px-3 py-2 text-sm font-semibold text-white shadow-md shadow-orange-600/25 transition-all hover:from-orange-500 hover:to-red-500 disabled:opacity-40"
         >
           <Plus size={15} />
           הוסף
