@@ -328,15 +328,22 @@ function ReportDialog({
             <input value={assignee} onChange={(e) => setAssignee(e.target.value)} className={inputCls} />
           </label>
         </div>
-        <div>
+        <div className="flex items-center gap-3">
           <input ref={fileRef} type="file" accept="image/*" hidden onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
           <button
             type="button" onClick={() => fileRef.current?.click()}
             className="flex items-center gap-1.5 rounded-lg border border-dashed border-slate-300 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50"
           >
             <ImagePlus size={15} />
-            {file ? file.name : task?.issue_image_url ? 'החלף את תמונת התקלה' : 'צרף תמונה של התקלה'}
+            {file || task?.issue_image_url ? 'החלף את התמונה' : 'צרף תמונה של התקלה'}
           </button>
+          {(file || task?.issue_image_url) && (
+            <img
+              src={file ? URL.createObjectURL(file) : task!.issue_image_url!}
+              alt="תצוגה מקדימה"
+              className="h-16 w-16 rounded-lg border border-slate-200 object-cover"
+            />
+          )}
         </div>
         <DialogButtons busy={busy} onCancel={onClose} submitLabel={task ? 'שמור שינויים' : 'דווח'} />
       </form>

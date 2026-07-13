@@ -234,15 +234,22 @@ function TaskDialog({
             <option value="low">נמוך</option>
           </select>
         </label>
-        <div>
+        <div className="flex items-center gap-3">
           <input ref={fileRef} type="file" accept="image/*" hidden onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
           <button
             type="button" onClick={() => fileRef.current?.click()}
             className="flex items-center gap-1.5 rounded-lg border border-dashed border-slate-300 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50"
           >
             <ImagePlus size={15} />
-            {file ? file.name : task?.image_url ? 'החלף את התמונה' : 'צרף תמונה'}
+            {file || task?.image_url ? 'החלף את התמונה' : 'צרף תמונה'}
           </button>
+          {(file || task?.image_url) && (
+            <img
+              src={file ? URL.createObjectURL(file) : task!.image_url!}
+              alt="תצוגה מקדימה"
+              className="h-16 w-16 rounded-lg border border-slate-200 object-cover"
+            />
+          )}
         </div>
         <DialogButtons busy={busy} onCancel={onClose} submitLabel={task ? 'שמור שינויים' : 'צור משימה'} />
       </form>
