@@ -3,6 +3,7 @@ import { format } from 'date-fns'
 import { he } from 'date-fns/locale'
 import { Plus, CheckCircle2, Circle, Clock, Pencil, Repeat, Trash2, Pause, Play, ImagePlus } from 'lucide-react'
 import { supabase, type AdminTask, type RecurringTask } from '../lib/supabase'
+import { prepareImage } from '../lib/images'
 import { Modal, DialogButtons, inputCls, BranchBadge, BranchFilter, BranchSelect } from './Faults'
 
 export default function TasksPage() {
@@ -172,8 +173,21 @@ function TaskDialog({
   const [deadline, setDeadline] = useState(task?.deadline ? task.deadline.slice(0, 10) : '')
   const [priority, setPriority] = useState<string>(task?.priority ?? 'medium')
   const [file, setFile] = useState<File | null>(null)
+  const [processing, setProcessing] = useState(false)
   const [busy, setBusy] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
+
+  async function pickFile(raw: File | null) {
+    if (!raw) return
+    setProcessing(true)
+    setFile(null)
+    try {
+      setFile(await prepareImage(raw))
+    } catch {
+      setFile(raw)
+    }
+    setProcessing(false)
+  }
 
   async function save(e: React.FormEvent) {
     e.preventDefault()
@@ -235,15 +249,15 @@ function TaskDialog({
           </select>
         </label>
         <div className="flex items-center gap-3">
-          <input ref={fileRef} type="file" accept="image/*" hidden onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+          <input ref={fileRef} type="file" accept="image/*,.heic,.heif" hidden onChange={(e) => pickFile(e.target.files?.[0] ?? null)} />
           <button
             type="button" onClick={() => fileRef.current?.click()}
             className="flex items-center gap-1.5 rounded-lg border border-dashed border-slate-300 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50"
           >
             <ImagePlus size={15} />
-            {file || task?.image_url ? 'החלף את התמונה' : 'צרף תמונה'}
+            {processing ? 'מעבד תמונה...' : file || task?.image_url ? 'החלף את התמונה' : 'צרף תמונה'}
           </button>
-          {(file || task?.image_url) && (
+          {(file || task?.image_url) && !processing && (
             <img
               src={file ? URL.createObjectURL(file) : task!.image_url!}
               alt="תצוגה מקדימה"

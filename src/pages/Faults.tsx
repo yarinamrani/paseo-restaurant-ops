@@ -5,6 +5,7 @@ import {
   Plus, Phone, CheckCircle2, Clock, AlertTriangle, ImagePlus, X, History, ShieldCheck, Pencil,
 } from 'lucide-react'
 import { supabase, BRANCHES, branchColors, type Task, type Vendor } from '../lib/supabase'
+import { prepareImage } from '../lib/images'
 
 const priorityLabels: Record<string, { label: string; cls: string }> = {
   high: { label: 'דחוף', cls: 'bg-red-100 text-red-700' },
@@ -246,8 +247,21 @@ function ReportDialog({
   const [vendorId, setVendorId] = useState(task?.vendor_id ?? '')
   const [assignee, setAssignee] = useState(task?.assignee_name ?? '')
   const [file, setFile] = useState<File | null>(null)
+  const [processing, setProcessing] = useState(false)
   const [busy, setBusy] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
+
+  async function pickFile(raw: File | null) {
+    if (!raw) return
+    setProcessing(true)
+    setFile(null)
+    try {
+      setFile(await prepareImage(raw))
+    } catch {
+      setFile(raw)
+    }
+    setProcessing(false)
+  }
 
   async function save(e: React.FormEvent) {
     e.preventDefault()
@@ -329,15 +343,15 @@ function ReportDialog({
           </label>
         </div>
         <div className="flex items-center gap-3">
-          <input ref={fileRef} type="file" accept="image/*" hidden onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+          <input ref={fileRef} type="file" accept="image/*,.heic,.heif" hidden onChange={(e) => pickFile(e.target.files?.[0] ?? null)} />
           <button
             type="button" onClick={() => fileRef.current?.click()}
             className="flex items-center gap-1.5 rounded-lg border border-dashed border-slate-300 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50"
           >
             <ImagePlus size={15} />
-            {file || task?.issue_image_url ? 'החלף את התמונה' : 'צרף תמונה של התקלה'}
+            {processing ? 'מעבד תמונה...' : file || task?.issue_image_url ? 'החלף את התמונה' : 'צרף תמונה של התקלה'}
           </button>
-          {(file || task?.issue_image_url) && (
+          {(file || task?.issue_image_url) && !processing && (
             <img
               src={file ? URL.createObjectURL(file) : task!.issue_image_url!}
               alt="תצוגה מקדימה"
